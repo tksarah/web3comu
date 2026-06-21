@@ -1,0 +1,38 @@
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL:-/data/portal.sqlite}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/data/uploads}
+    expose:
+      - "3000"
+    volumes:
+      - portal-data:/data
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8-alpine
+    depends_on:
+      - app
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    restart: unless-stopped
+
+volumes:
+  portal-data:
+  caddy-data:
+  caddy-config:

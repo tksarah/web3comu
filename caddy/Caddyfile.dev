@@ -1,0 +1,8 @@
+http://:8080 {
+	reverse_proxy app:3000
+}
+
+https://localhost:8443 {
+	tls internal
+	reverse_proxy app:3000
+}

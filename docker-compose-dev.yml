@@ -1,0 +1,39 @@
+services:
+  app:
+    image: node:24-bookworm-slim
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-/data/portal.sqlite}
+      UPLOAD_DIR: ${UPLOAD_DIR:-/data/uploads}
+    volumes:
+      - .:/app
+      - portal-node-modules:/app/node_modules
+      - portal-data:/data
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2.8-alpine
+    depends_on:
+      - app
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    volumes:
+      - ./caddy/Caddyfile.dev:/etc/caddy/Caddyfile:ro
+      - caddy-dev-data:/data
+      - caddy-dev-config:/config
+
+volumes:
+  portal-node-modules:
+  portal-data:
+  caddy-dev-data:
+  caddy-dev-config:
