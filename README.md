@@ -1,13 +1,15 @@
 # Web3 Community Portal
 
-NFT/トークン保有者向けの Web3 コミュニティポータルです。ウォレット署名ログイン、トークン保有判定、メンバープロフィール、管理画面、Faucet、Big Medal Token (BMT)、ログインボーナスをまとめて扱います。
+NFT/トークン保有者向けの Web3 コミュニティポータルです。ウォレット署名ログイン、トークン保有判定、メンバープロフィール、管理画面、ポータルのお知らせ/ライブラリ管理、Faucet、Big Medal Token (BMT)、ログインボーナスをまとめて扱います。
 
 ## Overview
 
 - ウォレット署名によるメンバー/管理者ログイン
 - ERC-20 / ERC-721 / ERC-1155 の保有条件によるメンバー認証
+- 管理ウォレットによるトークン条件に依存しないポータルアクセス
 - メンバープロフィールとプロフィール画像アップロード
 - 管理画面でのメンバー管理、公開制御、セッション失効
+- 管理画面でのポータル「お知らせ」「ライブラリ」コンテンツ作成、編集、公開切替
 - Faucet の支給額、allowlist、送金履歴、送金元ウォレット確認
 - BMT の mint、transfer、minter 権限、ログインボーナス設定
 - Caddy による HTTPS 終端とセキュリティヘッダー付与
@@ -32,7 +34,7 @@ Copy-Item .env.example .env
 | Key | 用途 |
 | --- | --- |
 | `DOMAIN` | 本番で Caddy が HTTPS を発行するドメイン。例: `example.com` |
-| `ADMIN_WALLET_ADDRESS` | `/admin` に管理者としてログインできるウォレットアドレス |
+| `ADMIN_WALLET_ADDRESS` | `/admin` に管理者としてログインでき、条件に関係なくポータルへ入れるウォレットアドレス |
 | `SESSION_SECRET` | セッショントークンの HMAC に使う長いランダム文字列。本番では必ず変更する |
 | `DATABASE_URL` | SQLite DB の保存先。Docker 本番の標準は `/data/portal.sqlite` |
 | `UPLOAD_DIR` | プロフィール画像の保存先。Docker 本番の標準は `/data/uploads` |
@@ -95,7 +97,10 @@ docker compose up --build -d
 2. `.env` の `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` を設定します。
 3. `/admin` を開き、管理者ウォレットで接続して署名します。
 4. 管理画面の「メンバー条件」で対象チェーン、RPC URL、コントラクト、規格、保有条件を設定します。
-5. 条件を有効化すると、メンバーは `/` からウォレット接続して `/portal` に入れるようになります。
+5. 管理画面の「コンテンツ管理」で「お知らせ」と「ライブラリ」を必要に応じて登録します。
+6. 条件を有効化すると、メンバーは `/` からウォレット接続して `/portal` に入れるようになります。
+
+管理ウォレットはメンバー条件が未設定、無効、または未達の場合でも `/portal`、`/portal/news`、`/portal/library`、`/members`、`/mypage` に入れます。Faucet の allowlist や BMT のオンチェーン条件は別管理です。
 
 ## Member Flow
 
@@ -107,6 +112,20 @@ docker compose up --build -d
 6. `/members` では公開済みで停止されていないメンバーのプロフィールを表示します。
 
 プロフィール画像は jpg/png/webp のみ、3MB 以下です。アップロード時に MIME type と実ファイル内容を検証し、配信時は認証済みメンバーまたは管理者だけが取得できます。
+
+## Portal Content
+
+管理画面の「コンテンツ管理」では、ポータルに表示する「お知らせ」と「ライブラリ」を管理できます。
+
+- お知らせはタイトル、本文、URL を登録できます。本文または URL のどちらかが必須です。
+- ライブラリは外部資料リンクを中心に扱います。タイトルと URL が必須で、説明文は任意です。
+- URL は `http://` または `https://` のみ保存できます。
+- 公開状態は「下書き」と「公開」から選びます。ポータルには公開済みコンテンツだけが表示されます。
+- 「一覧の上部に固定する」を有効にすると、公開一覧で固定コンテンツが先に表示されます。
+- 表示順は固定コンテンツが先、その後は公開日時の新しい順です。
+- お知らせ本文中の URL はポータル表示時にリンク化されます。
+
+ポータル上部のメニューバーから、ホーム、お知らせ、イベント、ライブラリ、メンバー、マイページへ移動できます。各ページ末尾の重複する戻りリンクは置かず、上部メニューを共通導線にしています。ライブラリのURLは互換性維持のため `/portal/library` のままです。
 
 ## Faucet
 
@@ -144,7 +163,9 @@ npm run deploy:bmt:minato
 - 状態変更 API は same-origin 検証を行い、外部 origin からの `POST` / `PUT` / `PATCH` / `DELETE` を拒否します。
 - セッション cookie は `httpOnly`、production では `secure`、`sameSite: "lax"` です。
 - 管理 API は `ADMIN_WALLET_ADDRESS` に一致する admin session を要求します。
+- ポータル閲覧とプロフィール更新は、認証済みメンバーまたは設定済み管理ウォレットを許可します。
 - DB 操作は SQLite prepared statement を使います。
+- ポータルコンテンツの URL は `http:` / `https:` に制限し、外部リンクは別タブで開きます。
 - Caddy は HSTS、`X-Content-Type-Options`、`X-Frame-Options`、`Referrer-Policy`、`Permissions-Policy`、最小 CSP を付与します。
 - 画像配信は `X-Content-Type-Options: nosniff` を付けます。
 - 本番 Docker image には Hardhat などの devDependencies を残さない構成です。
@@ -163,7 +184,10 @@ npm audit --omit=dev
 手動確認項目:
 
 - 通常ログインと管理ログインが成功する
+- 管理ウォレットがトークン条件に関係なくポータルへ入れる
 - 管理画面でメンバー条件を保存できる
+- 管理画面でお知らせ/ライブラリの下書き作成、公開、編集、削除が動作する
+- ポータルには公開済みのお知らせ/ライブラリだけが表示される
 - メンバー停止/解除、強制非公開、セッション失効が動作する
 - プロフィール更新、画像アップロード、画像表示が動作する
 - Faucet allowlist、設定保存、通常請求が動作する
@@ -175,5 +199,6 @@ npm audit --omit=dev
 
 - 静的画像は `public/images/` に配置します。
 - サンプル素材は `samples/` にあります。
+- ライブラリカード画像は `public/images/items.png` を使います。元素材は `samples/items.png` です。
 - Docker 本番では SQLite DB とアップロード画像は `portal-data` volume の `/data` に保存されます。
 - `.env`、`data/`、`node_modules/`、`.next/` は Git 管理しません。

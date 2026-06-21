@@ -58,7 +58,7 @@ export default async function PortalPage() {
           </Link>
           <Link className="menu-card image-menu-card" href="/portal/library">
             <img src="/images/items.png" alt="" />
-            <strong>資料庫</strong>
+            <strong>ライブラリ</strong>
             <span>{contentSummary(resourceCount, latestResources[0])}</span>
           </Link>
           <Link className="menu-card image-menu-card" href="/portal/login-bonus">

@@ -55,7 +55,7 @@ const adminPanelTitles: Record<AdminPanel, string> = {
 const adminPanelDescriptions: Record<AdminPanel, string> = {
   members: "登録済みメンバーの公開状態、停止状態、セッションを管理します。",
   conditions: "ログインに必要なトークン条件を設定し、ウォレットの判定をテストします。",
-  content: "ポータルのお知らせと資料庫リンクを作成・編集します。",
+  content: "ポータルのお知らせとライブラリリンクを作成・編集します。",
   bmt: "Big Medal Tokenのmint、送付、minter権限を管理します。",
   loginBonus: "Big Medal Tokenのログインボーナス設定を管理します。",
   faucet: "Faucetの支給設定、受け取りアドレス、送金履歴を管理します。"

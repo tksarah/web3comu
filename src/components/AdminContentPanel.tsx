@@ -19,7 +19,7 @@ type ContentForm = {
 
 const contentTypeLabels: Record<PortalContentType, string> = {
   notice: "お知らせ",
-  resource: "資料庫"
+  resource: "ライブラリ"
 };
 
 const contentStatusLabels: Record<PortalContentStatus, string> = {
@@ -198,7 +198,7 @@ export function AdminContentPanel({ initialContents }: Props) {
               }}
             >
               <option value="notice">お知らせ</option>
-              <option value="resource">資料庫</option>
+              <option value="resource">ライブラリ</option>
             </select>
           </label>
 
@@ -251,7 +251,7 @@ export function AdminContentPanel({ initialContents }: Props) {
 
           <p className="form-note">
             {isResource
-              ? "資料庫はURLが必須です。PDFやGoogle Driveなど外部資料へのリンクを登録します。"
+              ? "ライブラリはURLが必須です。PDFやGoogle Driveなど外部資料へのリンクを登録します。"
               : "お知らせは本文またはURLのどちらかが必須です。本文中のURLはポータル側でリンク表示します。"}
           </p>
 

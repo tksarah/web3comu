@@ -509,8 +509,17 @@ img {
 
 .portal-content-head h2 {
   margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.45;
+  color: #ffffff;
+  font-size: 1.42rem;
+  line-height: 1.42;
+  text-shadow: 1px 1px 0 #000, 0 0 12px rgba(124, 184, 255, 0.32);
+}
+
+.portal-page .focused-panel h2 {
+  color: #ffffff;
+  font-size: 1.42rem;
+  line-height: 1.42;
+  text-shadow: 1px 1px 0 #000, 0 0 12px rgba(124, 184, 255, 0.32);
 }
 
 .portal-content-body {

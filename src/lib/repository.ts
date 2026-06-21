@@ -299,7 +299,7 @@ function normalizePortalContentInput(input: PortalContentInput) {
     throw new Error("お知らせには本文またはURLが必要です。");
   }
   if (type === "resource" && !url) {
-    throw new Error("資料庫にはURLが必要です。");
+    throw new Error("ライブラリにはURLが必要です。");
   }
 
   return {

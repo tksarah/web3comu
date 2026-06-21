@@ -25,7 +25,7 @@ export function PortalFrame({ walletAddress, title, children }: Props) {
           <Link href="/portal">ホーム</Link>
           <Link href="/portal/news">お知らせ</Link>
           <Link href="/portal/events">イベント</Link>
-          <Link href="/portal/library">資料庫</Link>
+          <Link href="/portal/library">ライブラリ</Link>
           <Link href="/members">メンバー</Link>
           <Link href="/mypage">マイページ</Link>
         </nav>
