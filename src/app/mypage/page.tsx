@@ -13,7 +13,6 @@ export default async function MyPage() {
   return (
     <PortalFrame title="マイページ" walletAddress={context.session.walletAddress}>
       <section className="page-intro pixel-panel">
-        <p className="eyebrow">My Profile</p>
         <h1>プロフィール設定</h1>
         <p>すべて任意です。メールアドレスは公開設定に関係なく本人と管理者だけが確認できます。</p>
       </section>

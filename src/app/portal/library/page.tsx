@@ -13,7 +13,6 @@ export default async function LibraryPage() {
   return (
     <PortalFrame title="資料庫" walletAddress={context.session.walletAddress}>
       <section className="pixel-panel focused-panel">
-        <p className="eyebrow">Library</p>
         <h2>資料庫は準備中です</h2>
         <p>メンバー向け資料をここに掲載予定です。</p>
         <Link className="pixel-button" href="/portal">

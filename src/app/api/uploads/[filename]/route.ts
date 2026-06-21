@@ -12,6 +12,10 @@ type Params = {
   params: Promise<{ filename: string }>;
 };
 
+function contentDispositionFilename(filename: string) {
+  return filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
 export async function GET(_request: Request, { params }: Params) {
   const [member, admin] = await Promise.all([getMemberContext(), getAdminContext()]);
   if (!member && !admin) {
@@ -33,7 +37,9 @@ export async function GET(_request: Request, { params }: Params) {
     return new NextResponse(file, {
       headers: {
         "Cache-Control": "private, max-age=3600",
-        "Content-Type": String(record.profile_image_mime || "application/octet-stream")
+        "Content-Disposition": `inline; filename="${contentDispositionFilename(filename)}"`,
+        "Content-Type": String(record.profile_image_mime || "application/octet-stream"),
+        "X-Content-Type-Options": "nosniff"
       }
     });
   } catch {

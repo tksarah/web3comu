@@ -171,7 +171,6 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
 
   return (
     <section className="pixel-panel focused-panel login-bonus-panel">
-      <p className="eyebrow">Daily Reward</p>
       <h2>Big Medal Token ログインボーナス</h2>
       <p>
         Minato上で1日1回、接続ウォレット自身がBMTをclaimします。受け取りにはガス代用のETHが必要です。

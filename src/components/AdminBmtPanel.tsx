@@ -260,7 +260,7 @@ function AdminBmtPanelInner({ adminWallet }: Props) {
           </div>
         ) : null}
 
-        <div className="wallet-login-actions">
+        <div className="wallet-login-actions admin-wallet-actions-spaced">
           <button
             className="pixel-button secondary"
             type="button"
@@ -278,6 +278,7 @@ function AdminBmtPanelInner({ adminWallet }: Props) {
 
       <form className="pixel-panel admin-form admin-section-card" onSubmit={mintBmt}>
         <h2>BMT mint</h2>
+        <p className="form-note">新しいBMTを発行して相手に渡す機能です。</p>
         <label>
           <span>Recipient</span>
           <input placeholder="0x..." value={mintTo} onChange={(event) => setMintTo(event.target.value)} />
@@ -311,6 +312,7 @@ function AdminBmtPanelInner({ adminWallet }: Props) {
 
       <form className="pixel-panel admin-form admin-section-card" onSubmit={saveMinter}>
         <h2>minter権限</h2>
+        <p className="form-note">owner以外にもBMT発行を任せるための権限管理です。</p>
         <label>
           <span>Minter address</span>
           <input placeholder="0x..." value={minterAddress} onChange={(event) => setMinterAddress(event.target.value)} />

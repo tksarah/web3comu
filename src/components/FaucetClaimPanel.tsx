@@ -68,16 +68,12 @@ function FaucetFrame({ children }: { children: ReactNode }) {
     <main className="faucet-page">
       <header className="faucet-hero pixel-panel">
         <div>
-          <p className="eyebrow">Faucet</p>
           <h1>Faucet</h1>
           <p>Soneium Mainnet / Soneium Minato のガス代用ETHを受け取れます。</p>
         </div>
         <div className="faucet-nav">
           <Link className="text-link" href="/">
             LPへ戻る
-          </Link>
-          <Link className="text-link" href="/admin">
-            管理ページ
           </Link>
         </div>
       </header>

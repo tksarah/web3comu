@@ -233,7 +233,7 @@ function AdminLoginBonusPanelInner({ adminWallet }: Props) {
           </div>
         ) : null}
 
-        <div className="wallet-login-actions">
+        <div className="wallet-login-actions admin-wallet-actions-spaced">
           <button
             className="pixel-button secondary"
             type="button"

@@ -30,7 +30,6 @@ export default async function PortalPage() {
     <PortalFrame walletAddress={context.session.walletAddress}>
       <section className="portal-hero pixel-panel">
         <div>
-          <p className="eyebrow">Member Portal</p>
           <h1>ようこそ、{name}</h1>
           <p>コミュニティメンバー専用の情報拠点です。</p>
         </div>
