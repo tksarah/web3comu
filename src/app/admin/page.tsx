@@ -5,6 +5,7 @@ import {
   getNftConfig,
   listAdminFaucetClaims,
   listAdminMembers,
+  listAdminPortalContent,
   listFaucetAllowlist,
   listFaucetSettings
 } from "@/lib/repository";
@@ -21,6 +22,7 @@ export default async function AdminPage() {
       initialFaucetAllowlist={listFaucetAllowlist()}
       initialFaucetClaims={listAdminFaucetClaims()}
       initialFaucetSettings={listFaucetSettings()}
+      initialContents={listAdminPortalContent()}
       initialConfig={getNftConfig()}
       initialMembers={listAdminMembers()}
     />

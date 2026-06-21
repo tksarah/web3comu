@@ -28,11 +28,7 @@ export async function POST(request: Request) {
     const walletAddress = await verifyWalletNonce(body.address, body.signature);
     const intent = body.intent === "admin" ? "admin" : "member";
 
-    if (intent === "admin") {
-      if (!isConfiguredAdminWallet(walletAddress)) {
-        return jsonError("This wallet is not configured as the administrator.", 403);
-      }
-
+    if (isConfiguredAdminWallet(walletAddress)) {
       const session = createSession(walletAddress, "admin", null);
       const response = NextResponse.json({ role: "admin", walletAddress });
       response.cookies.set(SESSION_COOKIE, session.token, {
@@ -40,6 +36,10 @@ export async function POST(request: Request) {
         maxAge: session.maxAge
       });
       return response;
+    }
+
+    if (intent === "admin") {
+      return jsonError("This wallet is not configured as the administrator.", 403);
     }
 
     if (isMemberSuspended(walletAddress)) {

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { PortalFrame } from "@/components/PortalFrame";
-import { getMemberContext } from "@/lib/auth";
+import { getPortalContext } from "@/lib/auth";
 import { listPublicMembers } from "@/lib/repository";
 
 function shortAddress(address: string) {
@@ -9,7 +9,7 @@ function shortAddress(address: string) {
 }
 
 export default async function MembersPage() {
-  const context = await getMemberContext();
+  const context = await getPortalContext();
   if (!context) {
     redirect("/");
   }

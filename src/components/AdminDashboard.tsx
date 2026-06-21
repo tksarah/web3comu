@@ -3,10 +3,18 @@
 import { FormEvent, useState } from "react";
 
 import { AdminBmtPanel } from "@/components/AdminBmtPanel";
+import { AdminContentPanel } from "@/components/AdminContentPanel";
 import { AdminFaucetPanel } from "@/components/AdminFaucetPanel";
 import { AdminLoginBonusPanel } from "@/components/AdminLoginBonusPanel";
 import { DEFAULT_CHAIN } from "@/lib/chains";
-import type { FaucetAllowlistEntry, FaucetClaim, FaucetSetting, MemberProfile, NftConfig } from "@/lib/types";
+import type {
+  FaucetAllowlistEntry,
+  FaucetClaim,
+  FaucetSetting,
+  MemberProfile,
+  NftConfig,
+  PortalContent
+} from "@/lib/types";
 
 type Props = {
   initialConfig: NftConfig;
@@ -14,6 +22,7 @@ type Props = {
   initialFaucetSettings: FaucetSetting[];
   initialFaucetAllowlist: FaucetAllowlistEntry[];
   initialFaucetClaims: FaucetClaim[];
+  initialContents: PortalContent[];
   adminWallet: string;
 };
 
@@ -23,11 +32,12 @@ type NftTestResult = {
   reason?: string;
 };
 
-type AdminPanel = "members" | "conditions" | "bmt" | "loginBonus" | "faucet";
+type AdminPanel = "members" | "conditions" | "content" | "bmt" | "loginBonus" | "faucet";
 
 const adminNavItems = [
   { panel: "members", label: "メンバー管理" },
   { panel: "conditions", label: "メンバー条件" },
+  { panel: "content", label: "コンテンツ管理" },
   { panel: "bmt", label: "BMT管理" },
   { panel: "loginBonus", label: "ログインボーナス管理" },
   { panel: "faucet", label: "Faucet管理" }
@@ -36,6 +46,7 @@ const adminNavItems = [
 const adminPanelTitles: Record<AdminPanel, string> = {
   members: "メンバー管理",
   conditions: "メンバー条件",
+  content: "コンテンツ管理",
   bmt: "BMT管理",
   loginBonus: "ログインボーナス管理",
   faucet: "Faucet管理"
@@ -44,6 +55,7 @@ const adminPanelTitles: Record<AdminPanel, string> = {
 const adminPanelDescriptions: Record<AdminPanel, string> = {
   members: "登録済みメンバーの公開状態、停止状態、セッションを管理します。",
   conditions: "ログインに必要なトークン条件を設定し、ウォレットの判定をテストします。",
+  content: "ポータルのお知らせと資料庫リンクを作成・編集します。",
   bmt: "Big Medal Tokenのmint、送付、minter権限を管理します。",
   loginBonus: "Big Medal Tokenのログインボーナス設定を管理します。",
   faucet: "Faucetの支給設定、受け取りアドレス、送金履歴を管理します。"
@@ -96,6 +108,7 @@ export function AdminDashboard({
   initialFaucetSettings,
   initialFaucetAllowlist,
   initialFaucetClaims,
+  initialContents,
   adminWallet
 }: Props) {
   const [config, setConfig] = useState(initialConfig);
@@ -481,6 +494,10 @@ export function AdminDashboard({
                 </div>
               ) : null}
             </form>
+          </section>
+
+          <section className="admin-panel-view" hidden={activeAdminPanel !== "content"}>
+            <AdminContentPanel initialContents={initialContents} />
           </section>
 
           <section className="admin-panel-view" hidden={activeAdminPanel !== "faucet"}>

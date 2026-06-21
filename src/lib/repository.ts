@@ -9,6 +9,9 @@ import type {
   NftCheckMode,
   NftConfig,
   NftStandard,
+  PortalContent,
+  PortalContentStatus,
+  PortalContentType,
   PublicMemberProfile
 } from "@/lib/types";
 
@@ -35,6 +38,15 @@ type FaucetSettingInput = {
 type FaucetAllowlistInput = {
   walletAddress: string;
   note: unknown;
+};
+
+type PortalContentInput = {
+  type: unknown;
+  status: unknown;
+  title: unknown;
+  body: unknown;
+  url: unknown;
+  pinned: unknown;
 };
 
 type ProfileInput = {
@@ -188,6 +200,21 @@ function mapFaucetClaim(row: Row): FaucetClaim {
   };
 }
 
+function mapPortalContent(row: Row): PortalContent {
+  return {
+    id: Number(row.id),
+    type: text(row.type) as PortalContentType,
+    status: text(row.status) as PortalContentStatus,
+    title: text(row.title),
+    body: row.body ? text(row.body) : null,
+    url: row.url ? text(row.url) : null,
+    pinned: fromDbBool(row.pinned),
+    publishedAt: row.published_at ? text(row.published_at) : null,
+    createdAt: text(row.created_at),
+    updatedAt: text(row.updated_at)
+  };
+}
+
 function failStaleFaucetRequests(walletAddress: string, chainId: number) {
   const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
   getDb()
@@ -215,6 +242,73 @@ function toPublicMember(member: MemberProfile): PublicMemberProfile {
     profileImageFilename: member.profileImageFilename,
     lastVerifiedAt: member.lastVerifiedAt,
     updatedAt: member.updatedAt
+  };
+}
+
+function normalizePortalContentType(value: unknown): PortalContentType {
+  const type = text(value);
+  if (type !== "notice" && type !== "resource") {
+    throw new Error("コンテンツ種別が不正です。");
+  }
+  return type;
+}
+
+function normalizePortalContentStatus(value: unknown): PortalContentStatus {
+  const status = text(value) || "draft";
+  if (status !== "draft" && status !== "published") {
+    throw new Error("公開状態が不正です。");
+  }
+  return status;
+}
+
+function nullableHttpUrl(value: unknown) {
+  const raw = text(value).trim();
+  if (!raw) {
+    return null;
+  }
+  if (raw.length > 1200) {
+    throw new Error("URLは1200文字以内で入力してください。");
+  }
+
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error("URLはhttpまたはhttpsで始まる必要があります。");
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("http")) {
+      throw error;
+    }
+    throw new Error("URLの形式が正しくありません。");
+  }
+
+  return raw;
+}
+
+function normalizePortalContentInput(input: PortalContentInput) {
+  const type = normalizePortalContentType(input.type);
+  const status = normalizePortalContentStatus(input.status);
+  const title = text(input.title).trim().slice(0, 160);
+  const body = nullableText(input.body, 6000);
+  const url = nullableHttpUrl(input.url);
+
+  if (!title) {
+    throw new Error("タイトルは必須です。");
+  }
+  if (type === "notice" && !body && !url) {
+    throw new Error("お知らせには本文またはURLが必要です。");
+  }
+  if (type === "resource" && !url) {
+    throw new Error("資料庫にはURLが必要です。");
+  }
+
+  return {
+    type,
+    status,
+    title,
+    body,
+    url,
+    pinned: bool(input.pinned)
   };
 }
 
@@ -541,6 +635,136 @@ export function listAdminFaucetClaims(query = "", status = "") {
   return rows.map(mapFaucetClaim);
 }
 
+export function getPortalContent(id: number) {
+  const row = getDb()
+    .prepare("SELECT * FROM portal_content WHERE id = ?")
+    .get(id) as Row | undefined;
+  return row ? mapPortalContent(row) : null;
+}
+
+export function listAdminPortalContent(type?: PortalContentType) {
+  const rows = type
+    ? (getDb()
+        .prepare(
+          `SELECT * FROM portal_content
+           WHERE type = ?
+           ORDER BY pinned DESC, COALESCE(published_at, updated_at) DESC, id DESC
+           LIMIT 200`
+        )
+        .all(type) as Row[])
+    : (getDb()
+        .prepare(
+          `SELECT * FROM portal_content
+           ORDER BY type ASC, pinned DESC, COALESCE(published_at, updated_at) DESC, id DESC
+           LIMIT 200`
+        )
+        .all() as Row[]);
+  return rows.map(mapPortalContent);
+}
+
+export function listPublishedPortalContent(type: PortalContentType, limit = 50) {
+  const rows = getDb()
+    .prepare(
+      `SELECT * FROM portal_content
+       WHERE type = ? AND status = 'published'
+       ORDER BY pinned DESC, published_at DESC, id DESC
+       LIMIT ?`
+    )
+    .all(type, limit) as Row[];
+  return rows.map(mapPortalContent);
+}
+
+export function countPublishedPortalContent(type: PortalContentType) {
+  const row = getDb()
+    .prepare("SELECT COUNT(*) AS count FROM portal_content WHERE type = ? AND status = 'published'")
+    .get(type) as Row | undefined;
+  return Number(row?.count ?? 0);
+}
+
+export function createPortalContent(input: PortalContentInput) {
+  const normalized = normalizePortalContentInput(input);
+  const now = new Date().toISOString();
+  const publishedAt = normalized.status === "published" ? now : null;
+
+  const result = getDb()
+    .prepare(
+      `INSERT INTO portal_content (
+         type, status, title, body, url, pinned, published_at, created_at, updated_at
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      normalized.type,
+      normalized.status,
+      normalized.title,
+      normalized.body,
+      normalized.url,
+      normalized.pinned ? 1 : 0,
+      publishedAt,
+      now,
+      now
+    );
+
+  const content = getPortalContent(Number(result.lastInsertRowid));
+  if (!content) {
+    throw new Error("コンテンツを作成できませんでした。");
+  }
+  return content;
+}
+
+export function updatePortalContent(id: number, input: PortalContentInput) {
+  const existing = getPortalContent(id);
+  if (!existing) {
+    throw new Error("コンテンツが見つかりません。");
+  }
+
+  const normalized = normalizePortalContentInput(input);
+  const now = new Date().toISOString();
+  const publishedAt =
+    normalized.status === "published" ? existing.publishedAt ?? now : null;
+
+  getDb()
+    .prepare(
+      `UPDATE portal_content
+       SET type = ?,
+           status = ?,
+           title = ?,
+           body = ?,
+           url = ?,
+           pinned = ?,
+           published_at = ?,
+           updated_at = ?
+       WHERE id = ?`
+    )
+    .run(
+      normalized.type,
+      normalized.status,
+      normalized.title,
+      normalized.body,
+      normalized.url,
+      normalized.pinned ? 1 : 0,
+      publishedAt,
+      now,
+      id
+    );
+
+  const content = getPortalContent(id);
+  if (!content) {
+    throw new Error("コンテンツを更新できませんでした。");
+  }
+  return content;
+}
+
+export function deletePortalContent(id: number) {
+  const existing = getPortalContent(id);
+  if (!existing) {
+    throw new Error("コンテンツが見つかりません。");
+  }
+
+  getDb().prepare("DELETE FROM portal_content WHERE id = ?").run(id);
+  return existing;
+}
+
 export function upsertVerifiedMember(walletAddress: string) {
   const now = new Date().toISOString();
   getDb()
@@ -552,6 +776,19 @@ export function upsertVerifiedMember(walletAddress: string) {
          updated_at = excluded.updated_at`
     )
     .run(walletAddress, now, now, now);
+
+  return getMember(walletAddress);
+}
+
+export function ensureMemberProfile(walletAddress: string) {
+  const now = new Date().toISOString();
+  getDb()
+    .prepare(
+      `INSERT INTO members (wallet_address, created_at, updated_at)
+       VALUES (?, ?, ?)
+       ON CONFLICT(wallet_address) DO NOTHING`
+    )
+    .run(walletAddress, now, now);
 
   return getMember(walletAddress);
 }

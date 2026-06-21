@@ -4,7 +4,7 @@ import { getAddress, verifyMessage, type Address } from "viem";
 
 import { getAdminWalletAddress, getAppName, getConfiguredDomain, getSessionSecret } from "@/lib/env";
 import { getDb } from "@/lib/db";
-import { getMember, getNftConfig } from "@/lib/repository";
+import { ensureMemberProfile, getMember, getNftConfig } from "@/lib/repository";
 import type { Session, SessionRole } from "@/lib/types";
 
 export const SESSION_COOKIE = "web3comu_session";
@@ -178,6 +178,33 @@ export async function getAdminContext() {
   }
 
   return { session };
+}
+
+export async function getPortalContext() {
+  const session = await getCurrentSession();
+  if (!session) {
+    return null;
+  }
+
+  if (isConfiguredAdminWallet(session.walletAddress)) {
+    const member = ensureMemberProfile(session.walletAddress);
+    if (!member) {
+      return null;
+    }
+    return { session, member, isAdmin: true };
+  }
+
+  if (session.role !== "member") {
+    return null;
+  }
+
+  const member = getMember(session.walletAddress);
+  const config = getNftConfig();
+  if (!member || member.suspended || session.nftConfigVersion !== config.version) {
+    return null;
+  }
+
+  return { session, member, isAdmin: false };
 }
 
 export const sessionCookieOptions = {

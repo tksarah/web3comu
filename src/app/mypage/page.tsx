@@ -2,10 +2,10 @@ import { redirect } from "next/navigation";
 
 import { PortalFrame } from "@/components/PortalFrame";
 import { ProfileForm } from "@/components/ProfileForm";
-import { getMemberContext } from "@/lib/auth";
+import { getPortalContext } from "@/lib/auth";
 
 export default async function MyPage() {
-  const context = await getMemberContext();
+  const context = await getPortalContext();
   if (!context) {
     redirect("/");
   }

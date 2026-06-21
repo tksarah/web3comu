@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 
-import { getMemberContext } from "@/lib/auth";
+import { getPortalContext } from "@/lib/auth";
 import { getUploadDir } from "@/lib/env";
 import { errorMessage, jsonError } from "@/lib/http";
 import { updateProfileImage } from "@/lib/repository";
@@ -48,7 +48,7 @@ function detectImageMime(buffer: Buffer) {
 
 export async function POST(request: Request) {
   try {
-    const context = await getMemberContext();
+    const context = await getPortalContext();
     if (!context) {
       return jsonError("Member authentication is required.", 401);
     }

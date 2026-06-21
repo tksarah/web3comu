@@ -2,21 +2,34 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { PortalFrame } from "@/components/PortalFrame";
-import { getMemberContext } from "@/lib/auth";
+import { getPortalContext } from "@/lib/auth";
 import { formatBmtAmount, getBmtPortalStatus } from "@/lib/bmt";
+import { countPublishedPortalContent, listPublishedPortalContent } from "@/lib/repository";
+import type { PortalContent } from "@/lib/types";
 
 function displayName(walletAddress: string, name: string | null) {
   return name || `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
 }
 
+function contentSummary(count: number, latest: PortalContent | undefined) {
+  if (!count || !latest) {
+    return "未掲載";
+  }
+  return `${count}件 / 最新: ${latest.title}`;
+}
+
 export default async function PortalPage() {
-  const context = await getMemberContext();
+  const context = await getPortalContext();
   if (!context) {
     redirect("/");
   }
 
   const name = displayName(context.session.walletAddress, context.member.displayName);
   const bmtStatus = await getBmtPortalStatus(context.session.walletAddress);
+  const latestNotices = listPublishedPortalContent("notice", 1);
+  const latestResources = listPublishedPortalContent("resource", 1);
+  const noticeCount = countPublishedPortalContent("notice");
+  const resourceCount = countPublishedPortalContent("resource");
   const bmtBalanceLabel = bmtStatus ? formatBmtAmount(bmtStatus.balance) : "確認できません";
   const loginBonusLabel = bmtStatus
     ? bmtStatus.loginBonusClaimedToday
@@ -41,7 +54,12 @@ export default async function PortalPage() {
           <Link className="menu-card image-menu-card" href="/portal/news">
             <img src="/images/info.png" alt="" />
             <strong>おしらせ</strong>
-            <span>準備中</span>
+            <span>{contentSummary(noticeCount, latestNotices[0])}</span>
+          </Link>
+          <Link className="menu-card image-menu-card" href="/portal/library">
+            <img src="/images/items.png" alt="" />
+            <strong>資料庫</strong>
+            <span>{contentSummary(resourceCount, latestResources[0])}</span>
           </Link>
           <Link className="menu-card image-menu-card" href="/portal/login-bonus">
             <img src="/images/treasure.png" alt="" />
@@ -53,7 +71,7 @@ export default async function PortalPage() {
         <aside className="portal-sidebar">
           <section className="pixel-panel status-panel">
             <h2>コミュニティステータス</h2>
-            <p>認証状態: トークン確認済み</p>
+            <p>認証状態: {context.isAdmin ? "管理ウォレット" : "トークン確認済み"}</p>
             <p>BMT残高: {bmtBalanceLabel}</p>
             <p>ウォレット: {context.session.walletAddress}</p>
           </section>

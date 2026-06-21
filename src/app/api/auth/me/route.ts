@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getAdminContext, getCurrentSession, getMemberContext } from "@/lib/auth";
+import { getCurrentSession, getPortalContext } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -10,20 +10,11 @@ export async function GET() {
     return NextResponse.json({ authenticated: false });
   }
 
-  if (session.role === "admin") {
-    const admin = await getAdminContext();
-    return NextResponse.json({
-      authenticated: Boolean(admin),
-      role: admin ? "admin" : null,
-      walletAddress: admin?.session.walletAddress ?? null
-    });
-  }
-
-  const member = await getMemberContext();
+  const portal = await getPortalContext();
   return NextResponse.json({
-    authenticated: Boolean(member),
-    role: member ? "member" : null,
-    walletAddress: member?.session.walletAddress ?? null,
-    profile: member?.member ?? null
+    authenticated: Boolean(portal),
+    role: portal ? (portal.isAdmin ? "admin" : "member") : null,
+    walletAddress: portal?.session.walletAddress ?? null,
+    profile: portal?.member ?? null
   });
 }

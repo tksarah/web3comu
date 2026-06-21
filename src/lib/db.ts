@@ -86,6 +86,28 @@ function createFaucetTables(database: DatabaseSync) {
   `);
 }
 
+function createPortalContentTable(database: DatabaseSync) {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS portal_content (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      type TEXT NOT NULL CHECK (type IN ('notice', 'resource')),
+      status TEXT NOT NULL CHECK (status IN ('draft', 'published')) DEFAULT 'draft',
+      title TEXT NOT NULL,
+      body TEXT,
+      url TEXT,
+      pinned INTEGER NOT NULL DEFAULT 0,
+      published_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_portal_content_public
+      ON portal_content(type, status, pinned, published_at);
+    CREATE INDEX IF NOT EXISTS idx_portal_content_updated
+      ON portal_content(type, updated_at);
+  `);
+}
+
 function migrateFaucetClaimsTable(database: DatabaseSync) {
   const columns = database.prepare("PRAGMA table_info(faucet_claims)").all() as Array<{ name: string }>;
   if (!columns.some((column) => column.name === "failure_reason")) {
@@ -246,6 +268,7 @@ function openDatabase() {
   `);
   createNftConfigTable(database);
   createFaucetTables(database);
+  createPortalContentTable(database);
   migrateFaucetClaimsTable(database);
   migrateNftConfigTable(database);
   initializeFaucetSettings(database);

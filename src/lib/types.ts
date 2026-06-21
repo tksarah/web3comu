@@ -6,6 +6,10 @@ export type NftCheckMode = "collection" | "tokenOwner" | "balance";
 
 export type FaucetClaimStatus = "requested" | "submitted" | "confirmed" | "failed" | "cancelled";
 
+export type PortalContentType = "notice" | "resource";
+
+export type PortalContentStatus = "draft" | "published";
+
 export type NftConfig = {
   id: number;
   chainId: number;
@@ -84,6 +88,19 @@ export type FaucetClaim = {
   requestedAt: string;
   submittedAt: string | null;
   confirmedAt: string | null;
+  updatedAt: string;
+};
+
+export type PortalContent = {
+  id: number;
+  type: PortalContentType;
+  status: PortalContentStatus;
+  title: string;
+  body: string | null;
+  url: string | null;
+  pinned: boolean;
+  publishedAt: string | null;
+  createdAt: string;
   updatedAt: string;
 };
 

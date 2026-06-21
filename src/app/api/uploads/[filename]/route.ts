@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 
-import { getAdminContext, getMemberContext } from "@/lib/auth";
+import { getPortalContext } from "@/lib/auth";
 import { getUploadDir } from "@/lib/env";
 import { findImageRecord } from "@/lib/repository";
 
@@ -17,8 +17,8 @@ function contentDispositionFilename(filename: string) {
 }
 
 export async function GET(_request: Request, { params }: Params) {
-  const [member, admin] = await Promise.all([getMemberContext(), getAdminContext()]);
-  if (!member && !admin) {
+  const portal = await getPortalContext();
+  if (!portal) {
     return new NextResponse("Not found", { status: 404 });
   }
 

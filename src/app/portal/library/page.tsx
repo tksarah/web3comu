@@ -1,23 +1,54 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { LinkedText } from "@/components/LinkedText";
 import { PortalFrame } from "@/components/PortalFrame";
-import { getMemberContext } from "@/lib/auth";
+import { getPortalContext } from "@/lib/auth";
+import { listPublishedPortalContent } from "@/lib/repository";
+
+function formatContentDate(value: string | null) {
+  if (!value) {
+    return "未公開";
+  }
+  return new Date(value).toLocaleDateString("ja-JP", { timeZone: "Asia/Tokyo" });
+}
 
 export default async function LibraryPage() {
-  const context = await getMemberContext();
+  const context = await getPortalContext();
   if (!context) {
     redirect("/");
   }
 
+  const resources = listPublishedPortalContent("resource");
+
   return (
     <PortalFrame title="資料庫" walletAddress={context.session.walletAddress}>
-      <section className="pixel-panel focused-panel">
-        <h2>資料庫は準備中です</h2>
-        <p>メンバー向け資料をここに掲載予定です。</p>
-        <Link className="pixel-button" href="/portal">
-          ホームへ戻る
-        </Link>
+      <section className="portal-content-list">
+        {resources.length ? (
+          resources.map((resource) => (
+            <article className="pixel-panel portal-content-card" key={resource.id}>
+              <div className="portal-content-head">
+                <h2>{resource.title}</h2>
+                {resource.pinned ? <span className="member-status-badge enabled">固定</span> : null}
+              </div>
+              <p className="content-meta">公開日: {formatContentDate(resource.publishedAt)}</p>
+              {resource.body ? (
+                <p className="portal-content-body">
+                  <LinkedText text={resource.body} />
+                </p>
+              ) : null}
+              {resource.url ? (
+                <a className="pixel-button small" href={resource.url} rel="noreferrer" target="_blank">
+                  資料を開く
+                </a>
+              ) : null}
+            </article>
+          ))
+        ) : (
+          <section className="pixel-panel focused-panel">
+            <h2>資料庫はまだありません</h2>
+            <p>公開された資料リンクがここに表示されます。</p>
+          </section>
+        )}
       </section>
     </PortalFrame>
   );
