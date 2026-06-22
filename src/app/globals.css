@@ -1233,16 +1233,6 @@ img {
     linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.72)),
     url("/images/tile.png") center / 420px 420px repeat,
     #050608;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.72)),
-    image-set(
-      url("/images/optimized/tile-420.avif") type("image/avif") 1x,
-      url("/images/optimized/tile-840.avif") type("image/avif") 2x,
-      url("/images/optimized/tile-420.webp") type("image/webp") 1x,
-      url("/images/optimized/tile-840.webp") type("image/webp") 2x,
-      url("/images/tile.png") type("image/png") 1x
-    ) center / 420px 420px repeat,
-    #050608;
 }
 
 .guide-hero,
