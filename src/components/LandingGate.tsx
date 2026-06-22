@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 import { WalletLoginButton } from "@/components/WalletLoginButton";
 
@@ -6,7 +7,15 @@ export function LandingGate() {
   return (
     <main className="landing-page">
       <div className="landing-content">
-        <img className="landing-image" src="/images/top.png" alt="Web3コミュニティポータル" />
+        <Image
+          priority
+          className="landing-image"
+          src="/images/top.png"
+          alt="Web3コミュニティポータル"
+          width={1774}
+          height={887}
+          sizes="(max-width: 720px) calc(100vw - 36px), 1180px"
+        />
         <section className="pixel-panel landing-actions" aria-label="Web3コミュニティポータルへの入口">
           <div>
             <div className="landing-title-row">

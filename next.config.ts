@@ -16,8 +16,20 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    formats: ["image/avif", "image/webp"]
+  },
   async headers() {
     return [
+      {
+        source: "/images/optimized/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable"
+          }
+        ]
+      },
       {
         source: "/:path*",
         headers: securityHeaders

@@ -147,6 +147,16 @@ img {
     linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.58)),
     url("/images/tile.png") center / 420px 420px repeat,
     #02051a;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.58)),
+    image-set(
+      url("/images/optimized/tile-420.avif") type("image/avif") 1x,
+      url("/images/optimized/tile-840.avif") type("image/avif") 2x,
+      url("/images/optimized/tile-420.webp") type("image/webp") 1x,
+      url("/images/optimized/tile-840.webp") type("image/webp") 2x,
+      url("/images/tile.png") type("image/png") 1x
+    ) center / 420px 420px repeat,
+    #02051a;
   background-position:
     center,
     center,
@@ -334,6 +344,14 @@ img {
     linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
     url("/images/admin-bg.png") center / cover fixed,
     #050608;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
+    image-set(
+      url("/images/optimized/admin-bg-1600.avif") type("image/avif"),
+      url("/images/optimized/admin-bg-1600.webp") type("image/webp"),
+      url("/images/admin-bg.png") type("image/png")
+    ) center / cover fixed,
+    #050608;
 }
 
 .auth-panel {
@@ -349,6 +367,14 @@ img {
   background:
     linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
     url("/images/portal-bg.png") center / cover fixed,
+    #050608;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
+    image-set(
+      url("/images/optimized/portal-bg-1600.avif") type("image/avif"),
+      url("/images/optimized/portal-bg-1600.webp") type("image/webp"),
+      url("/images/portal-bg.png") type("image/png")
+    ) center / cover fixed,
     #050608;
 }
 
@@ -815,6 +841,14 @@ img {
     linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
     url("/images/admin-bg.png") center / cover fixed,
     #050608;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
+    image-set(
+      url("/images/optimized/admin-bg-1600.avif") type("image/avif"),
+      url("/images/optimized/admin-bg-1600.webp") type("image/webp"),
+      url("/images/admin-bg.png") type("image/png")
+    ) center / cover fixed,
+    #050608;
 }
 
 .admin-header {
@@ -1062,6 +1096,14 @@ img {
     linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
     url("/images/portal-bg.png") center / cover fixed,
     #050608;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
+    image-set(
+      url("/images/optimized/portal-bg-1600.avif") type("image/avif"),
+      url("/images/optimized/portal-bg-1600.webp") type("image/webp"),
+      url("/images/portal-bg.png") type("image/png")
+    ) center / cover fixed,
+    #050608;
 }
 
 .faucet-hero,
@@ -1190,6 +1232,16 @@ img {
   background:
     linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.72)),
     url("/images/tile.png") center / 420px 420px repeat,
+    #050608;
+  background:
+    linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.72)),
+    image-set(
+      url("/images/optimized/tile-420.avif") type("image/avif") 1x,
+      url("/images/optimized/tile-840.avif") type("image/avif") 2x,
+      url("/images/optimized/tile-420.webp") type("image/webp") 1x,
+      url("/images/optimized/tile-840.webp") type("image/webp") 2x,
+      url("/images/tile.png") type("image/png") 1x
+    ) center / 420px 420px repeat,
     #050608;
 }
 
@@ -1460,10 +1512,57 @@ img {
 
 @media (max-width: 720px) {
   .landing-page,
+  .admin-login-page,
   .portal-page,
   .faucet-page,
   .admin-page {
     padding: 12px;
+  }
+
+  .admin-login-page,
+  .portal-page,
+  .faucet-page,
+  .admin-page {
+    background-attachment: scroll;
+  }
+
+  .admin-login-page {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
+      url("/images/admin-bg.png");
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
+      image-set(
+        url("/images/optimized/admin-bg-1200.avif") type("image/avif"),
+        url("/images/optimized/admin-bg-1200.webp") type("image/webp"),
+        url("/images/admin-bg.png") type("image/png")
+      );
+  }
+
+  .portal-page {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
+      url("/images/portal-bg.png");
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
+      image-set(
+        url("/images/optimized/portal-bg-1200.avif") type("image/avif"),
+        url("/images/optimized/portal-bg-1200.webp") type("image/webp"),
+        url("/images/portal-bg.png") type("image/png")
+      );
+  }
+
+  .faucet-page {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
+      url("/images/portal-bg.png");
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
+      image-set(
+        url("/images/optimized/portal-bg-1200.avif") type("image/avif"),
+        url("/images/optimized/portal-bg-1200.webp") type("image/webp"),
+        url("/images/portal-bg.png") type("image/png")
+      );
   }
 
   .landing-image {
@@ -1578,6 +1677,14 @@ img {
   background:
     linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
     url("/images/admin-bg.png") center / cover fixed,
+    #050608;
+  background:
+    linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
+    image-set(
+      url("/images/optimized/admin-bg-1600.avif") type("image/avif"),
+      url("/images/optimized/admin-bg-1600.webp") type("image/webp"),
+      url("/images/admin-bg.png") type("image/png")
+    ) center / cover fixed,
     #050608;
   font-family:
     "Noto Sans JP",
@@ -2201,6 +2308,17 @@ img {
 @media (max-width: 720px) {
   .admin-page {
     padding: 12px;
+    background-attachment: scroll;
+    background-image:
+      linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
+      url("/images/admin-bg.png");
+    background-image:
+      linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
+      image-set(
+        url("/images/optimized/admin-bg-1200.avif") type("image/avif"),
+        url("/images/optimized/admin-bg-1200.webp") type("image/webp"),
+        url("/images/admin-bg.png") type("image/png")
+      );
   }
 
   .admin-page .admin-header {

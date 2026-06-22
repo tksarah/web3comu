@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { PortalFrame } from "@/components/PortalFrame";
@@ -56,17 +57,17 @@ export default async function PortalPage() {
       <div className="portal-layout">
         <section className="portal-menu-grid" aria-label="ポータルメニュー">
           <Link className="menu-card image-menu-card" href="/portal/news">
-            <img src="/images/info.png" alt="" />
+            <Image src="/images/info.png" alt="" width={256} height={256} sizes="128px" />
             <strong>おしらせ</strong>
             <span>{contentSummary(noticeCount, latestNotices[0])}</span>
           </Link>
           <Link className="menu-card image-menu-card" href="/portal/library">
-            <img src="/images/items.png" alt="" />
+            <Image src="/images/items.png" alt="" width={256} height={256} sizes="128px" />
             <strong>ライブラリ</strong>
             <span>{contentSummary(resourceCount, latestResources[0])}</span>
           </Link>
           <Link className="menu-card image-menu-card" href="/portal/login-bonus">
-            <img src="/images/treasure.png" alt="" />
+            <Image src="/images/treasure.png" alt="" width={256} height={256} sizes="128px" />
             <strong>ログインボーナス</strong>
             <span>{loginBonusLabel}</span>
           </Link>

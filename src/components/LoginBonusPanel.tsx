@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAddress, type Hash } from "viem";
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi";
@@ -175,7 +176,14 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
       <p>
         接続ウォレットに１に１回だけ受け取れます。受け取りにはSoneium MinatoのETH（ガス代として）が必要です。
       </p>
-      <img className="login-bonus-art" src="/images/bmt.png" alt="" />
+      <Image
+        className="login-bonus-art"
+        src="/images/bmt.png"
+        alt=""
+        width={520}
+        height={520}
+        sizes="260px"
+      />
 
       <div className="bmt-stat-grid login-bonus-grid">
         <div className="test-result">
