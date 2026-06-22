@@ -9,7 +9,7 @@ import type { Session, SessionRole } from "@/lib/types";
 
 export const SESSION_COOKIE = "web3comu_session";
 const NONCE_TTL_MS = 10 * 60 * 1000;
-const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
+const SESSION_TTL_SECONDS = 24 * 60 * 60;
 
 type Row = Record<string, unknown>;
 
@@ -128,12 +128,16 @@ export function getSessionByToken(token: string | undefined) {
     return null;
   }
 
+  const createdAfter = new Date(Date.now() - SESSION_TTL_SECONDS * 1000).toISOString();
   const row = getDb()
     .prepare(
       `SELECT * FROM sessions
-       WHERE token_hash = ? AND revoked_at IS NULL AND expires_at > ?`
+       WHERE token_hash = ?
+         AND revoked_at IS NULL
+         AND expires_at > ?
+         AND created_at > ?`
     )
-    .get(hashToken(token), Date.now()) as Row | undefined;
+    .get(hashToken(token), Date.now(), createdAfter) as Row | undefined;
 
   return row ? mapSession(row) : null;
 }

@@ -18,7 +18,7 @@ export function PortalFrame({ walletAddress, title, children }: Props) {
     <main className="portal-page">
       <header className="portal-topbar pixel-panel">
         <Link className="brand-mark" href="/portal">
-          <span className="crest">◆</span>
+          <img className="brand-icon" src="/icons/site-crest-48.png" alt="" aria-hidden="true" />
           <span>Web3分科会コミュニティ</span>
         </Link>
         <nav className="portal-nav" aria-label="ポータルメニュー">

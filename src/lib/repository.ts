@@ -15,6 +15,8 @@ import type {
   PublicMemberProfile
 } from "@/lib/types";
 
+export const FAUCET_AMOUNT_MAX_ETH = "0.1";
+
 type Row = Record<string, unknown>;
 
 type NftConfigInput = {
@@ -107,6 +109,22 @@ function isNonNegativeDecimalText(value: string, decimals: number) {
   }
   const [, fraction = ""] = value.split(".");
   return fraction.length <= decimals;
+}
+
+function decimalToScaled(value: string, decimals: number) {
+  if (!isNonNegativeDecimalText(value, decimals)) {
+    return null;
+  }
+
+  const [whole, fraction = ""] = value.split(".");
+  const fractionValue = fraction.padEnd(decimals, "0");
+  return BigInt(whole || "0") * 10n ** BigInt(decimals) + (fractionValue ? BigInt(fractionValue) : 0n);
+}
+
+export function isFaucetAmountWithinLimit(value: string, decimals: number) {
+  const amount = decimalToScaled(value, decimals);
+  const max = decimalToScaled(FAUCET_AMOUNT_MAX_ETH, decimals);
+  return amount !== null && max !== null && amount <= max;
 }
 
 function hasPositiveDecimalValue(value: string) {
@@ -285,6 +303,30 @@ function nullableHttpUrl(value: unknown) {
   return raw;
 }
 
+function normalizeRequiredRpcUrl(value: unknown) {
+  const raw = text(value).trim();
+  if (!raw) {
+    throw new Error("RPC URL is required.");
+  }
+
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error("RPC URL must start with http or https.");
+    }
+    if (process.env.NODE_ENV === "production" && parsed.protocol !== "https:") {
+      throw new Error("RPC URL must use https in production.");
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("RPC URL")) {
+      throw error;
+    }
+    throw new Error("RPC URL is invalid.");
+  }
+
+  return raw;
+}
+
 function normalizePortalContentInput(input: PortalContentInput) {
   const type = normalizePortalContentType(input.type);
   const status = normalizePortalContentStatus(input.status);
@@ -324,7 +366,7 @@ export function saveNftConfig(input: NftConfigInput) {
   const chainId = Number(input.chainId);
   const minBalance = numericText(input.minBalance);
   const tokenDecimals = Number(input.tokenDecimals ?? 18);
-  const rpcUrl = text(input.rpcUrl).trim();
+  const rpcUrl = normalizeRequiredRpcUrl(input.rpcUrl);
   const contractAddress = text(input.contractAddress).trim();
   const standard = text(input.standard) as NftStandard;
   let checkMode = (text(input.checkMode) || "collection") as NftCheckMode;
@@ -332,9 +374,6 @@ export function saveNftConfig(input: NftConfigInput) {
 
   if (!Number.isInteger(chainId) || chainId <= 0) {
     throw new Error("chainId must be a positive integer.");
-  }
-  if (!rpcUrl) {
-    throw new Error("RPC URL is required.");
   }
   if (!contractAddress) {
     throw new Error("Contract address is required.");
@@ -441,6 +480,10 @@ export function saveFaucetSettings(inputs: FaucetSettingInput[]) {
         throw new Error("Faucet支給額は0以上、18桁以内の小数で入力してください。");
       }
 
+      if (!isFaucetAmountWithinLimit(amountEth, chain.nativeCurrency.decimals)) {
+        throw new Error(`Faucet amount must be ${FAUCET_AMOUNT_MAX_ETH} ETH or less.`);
+      }
+
       update.run(amountEth, bool(input.enabled) ? 1 : 0, now, chain.id);
     }
 
@@ -531,7 +574,8 @@ export function createFaucetClaim(walletAddress: string, chainId: number) {
     }
     if (
       !isNonNegativeDecimalText(setting.amountEth, chain.nativeCurrency.decimals) ||
-      !hasPositiveDecimalValue(setting.amountEth)
+      !hasPositiveDecimalValue(setting.amountEth) ||
+      !isFaucetAmountWithinLimit(setting.amountEth, chain.nativeCurrency.decimals)
     ) {
       throw new Error("このネットワークのFaucet支給額が設定されていません。");
     }

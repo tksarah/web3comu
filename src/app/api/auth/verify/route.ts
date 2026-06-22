@@ -3,15 +3,20 @@ import { NextResponse } from "next/server";
 import {
   createSession,
   isConfiguredAdminWallet,
+  normalizeWalletAddress,
   SESSION_COOKIE,
   sessionCookieOptions,
   verifyWalletNonce
 } from "@/lib/auth";
 import { errorMessage, jsonError } from "@/lib/http";
 import { verifyNftOwnership } from "@/lib/nft";
+import { authRateLimitKey, checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { getNftConfig, isMemberSuspended, upsertVerifiedMember } from "@/lib/repository";
 
 export const runtime = "nodejs";
+
+const VERIFY_RATE_LIMIT = 10;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
 export async function POST(request: Request) {
   try {
@@ -25,7 +30,20 @@ export async function POST(request: Request) {
       return jsonError("Wallet address and signature are required.");
     }
 
-    const walletAddress = await verifyWalletNonce(body.address, body.signature);
+    const requestedWalletAddress = normalizeWalletAddress(body.address);
+    const rateLimit = checkRateLimit(
+      authRateLimitKey("verify", getClientIp(request), requestedWalletAddress),
+      VERIFY_RATE_LIMIT,
+      RATE_LIMIT_WINDOW_MS
+    );
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many login requests. Please wait and try again." },
+        { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } }
+      );
+    }
+
+    const walletAddress = await verifyWalletNonce(requestedWalletAddress, body.signature);
     const intent = body.intent === "admin" ? "admin" : "member";
 
     if (isConfiguredAdminWallet(walletAddress)) {

@@ -88,6 +88,10 @@ export function faucetRateLimitKey(action: string, clientIp: string, walletAddre
   return `faucet:${action}:${clientIp}:${walletAddress.toLowerCase()}:${chainId}`;
 }
 
+export function authRateLimitKey(action: string, clientIp: string, walletAddress: string) {
+  return `auth:${action}:${clientIp}:${walletAddress.toLowerCase()}`;
+}
+
 export function logFaucetAudit(
   level: "info" | "warn",
   event: string,

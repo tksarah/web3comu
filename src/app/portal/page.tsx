@@ -7,8 +7,12 @@ import { formatBmtAmount, getBmtPortalStatus } from "@/lib/bmt";
 import { countPublishedPortalContent, listPublishedPortalContent } from "@/lib/repository";
 import type { PortalContent } from "@/lib/types";
 
+function shortAddress(address: string) {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 function displayName(walletAddress: string, name: string | null) {
-  return name || `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`;
+  return name || shortAddress(walletAddress);
 }
 
 function contentSummary(count: number, latest: PortalContent | undefined) {
@@ -46,7 +50,7 @@ export default async function PortalPage() {
           <h1>ようこそ、{name}</h1>
           <p>コミュニティメンバー専用の情報拠点です。</p>
         </div>
-        <div className="crystal">◆</div>
+        <img className="portal-hero-icon" src="/icons/site-crest-180.png" alt="" aria-hidden="true" />
       </section>
 
       <div className="portal-layout">
@@ -70,14 +74,19 @@ export default async function PortalPage() {
 
         <aside className="portal-sidebar">
           <section className="pixel-panel status-panel">
-            <h2>コミュニティステータス</h2>
+            <h2>メンバーステータス</h2>
             <p>認証状態: {context.isAdmin ? "管理ウォレット" : "トークン確認済み"}</p>
-            <p>BMT残高: {bmtBalanceLabel}</p>
-            <p>ウォレット: {context.session.walletAddress}</p>
+            <p className="status-icon-row">
+              <img src="/images/bmt-coin-stack.svg" alt="" aria-hidden="true" />
+              <span>BMT残高: {bmtBalanceLabel}</span>
+            </p>
+            <p className="status-icon-row">
+              <img src="/images/wallet-small.svg" alt="" aria-hidden="true" />
+              <span>ウォレット: {shortAddress(context.session.walletAddress)}</span>
+            </p>
           </section>
           <section className="pixel-panel status-panel">
             <h2>今日のクエスト</h2>
-            <p>ログインボーナスページへの導線を確認しましょう。</p>
             <Link className="pixel-button" href="/portal/login-bonus">
               今すぐ見る
             </Link>

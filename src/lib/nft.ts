@@ -42,6 +42,21 @@ const erc1155Abi = [
   }
 ] as const;
 
+function rpcUrlValidationError(rpcUrl: string) {
+  try {
+    const parsed = new URL(rpcUrl);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return "RPC URL must start with http or https.";
+    }
+    if (process.env.NODE_ENV === "production" && parsed.protocol !== "https:") {
+      return "RPC URL must use https in production.";
+    }
+    return null;
+  } catch {
+    return "RPC URL is invalid.";
+  }
+}
+
 export type NftVerificationResult = {
   ok: boolean;
   reason?: string;
@@ -84,11 +99,22 @@ export async function verifyNftOwnership(
   if (!config.rpcUrl || !config.contractAddress) {
     return { ok: false, reason: "トークン条件のRPC URLまたはコントラクトアドレスが未設定です。" };
   }
+  const rpcUrlError = rpcUrlValidationError(config.rpcUrl);
+  if (rpcUrlError) {
+    return { ok: false, reason: rpcUrlError };
+  }
 
   try {
     const wallet = getAddress(walletAddress) as Address;
     const contractAddress = getAddress(config.contractAddress) as Address;
     const client = createConfiguredClient(config);
+    const rpcChainId = await client.getChainId();
+    if (rpcChainId !== config.chainId) {
+      return {
+        ok: false,
+        reason: `RPC chainId ${rpcChainId} does not match configured chainId ${config.chainId}.`
+      };
+    }
 
     if (config.standard === "erc20") {
       const balance = await client.readContract({

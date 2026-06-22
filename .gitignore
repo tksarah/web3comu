@@ -2,6 +2,7 @@
 node_modules/
 data/
 .env
+.env.proxy
 .npm-cache/
 *.log
 coverage/

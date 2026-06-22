@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Wallet">
+  <defs>
+    <linearGradient id="walletBody" x1="14" y1="12" x2="50" y2="55" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9b6332"/>
+      <stop offset="0.55" stop-color="#6f3f1d"/>
+      <stop offset="1" stop-color="#3b2113"/>
+    </linearGradient>
+    <linearGradient id="walletFlap" x1="16" y1="12" x2="48" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d89a46"/>
+      <stop offset="1" stop-color="#7b431c"/>
+    </linearGradient>
+  </defs>
+
+  <path d="M12 18.5c0-4 3.2-7.2 7.2-7.2h26.5c3.4 0 6.2 2.8 6.2 6.2v3.6H20.8c-4.9 0-8.8 3.9-8.8 8.8V18.5Z" fill="url(#walletFlap)" stroke="#24130b" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M10 24.5c0-4.1 3.3-7.4 7.4-7.4h31.2c3 0 5.4 2.4 5.4 5.4v25.8c0 3-2.4 5.4-5.4 5.4H17.4c-4.1 0-7.4-3.3-7.4-7.4V24.5Z" fill="url(#walletBody)" stroke="#24130b" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M15 24.8c1.1-1.4 2.8-2.3 4.8-2.3h28.7" fill="none" stroke="#f0bc62" stroke-width="2.3" stroke-linecap="round" opacity=".82"/>
+  <path d="M36 31.5h18c2 0 3.6 1.6 3.6 3.6v7.8c0 2-1.6 3.6-3.6 3.6H36c-4.1 0-7.5-3.4-7.5-7.5s3.4-7.5 7.5-7.5Z" fill="#5a3218" stroke="#24130b" stroke-width="3" stroke-linejoin="round"/>
+  <circle cx="37.5" cy="39" r="3.4" fill="#ffd766" stroke="#3b2113" stroke-width="2"/>
+  <path d="M17 49h28" fill="none" stroke="#2b170d" stroke-width="2.2" stroke-linecap="round" opacity=".5"/>
+</svg>

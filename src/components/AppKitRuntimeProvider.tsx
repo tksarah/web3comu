@@ -112,7 +112,7 @@ function createRuntime(projectId: string): AppKitRuntime {
       name: "Web3コミュニティポータル",
       description: "トークン保有者向けコミュニティポータル",
       url: window.location.origin,
-      icons: [`${window.location.origin}/images/top.png`]
+      icons: [`${window.location.origin}/icons/site-crest-512.png`]
     },
     features: {
       analytics: false,

@@ -21,6 +21,8 @@ type FaucetWalletStatus = {
   }>;
 };
 
+const MAX_FAUCET_AMOUNT_ETH = "0.1";
+
 async function readError(response: Response) {
   try {
     const body = (await response.json()) as { error?: string };
@@ -203,6 +205,8 @@ export function AdminFaucetPanel({ initialSettings, initialAllowlist, initialCla
             </>
           ) : null}
         </section>
+
+        <p className="form-note">Max per claim: {MAX_FAUCET_AMOUNT_ETH} ETH</p>
 
         {settings.map((setting, index) => (
           <div className="faucet-setting-row" key={setting.chainId}>

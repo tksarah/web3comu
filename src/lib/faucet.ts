@@ -17,7 +17,9 @@ import { getFaucetChain } from "@/lib/chains";
 import { getDb } from "@/lib/db";
 import { getAppName, getConfiguredDomain, getFaucetPrivateKey } from "@/lib/env";
 import {
+  FAUCET_AMOUNT_MAX_ETH,
   getFaucetSetting,
+  isFaucetAmountWithinLimit,
   listFaucetSettings,
   markFaucetClaimConfirmed,
   markFaucetClaimSubmitted
@@ -197,6 +199,13 @@ export async function sendFaucetClaim(claim: FaucetClaim) {
   const setting = getFaucetSetting(claim.chainId);
   if (!setting?.enabled) {
     throw new Error("このネットワークのFaucetは無効です。");
+  }
+  const chain = getFaucetChain(claim.chainId);
+  if (!chain) {
+    throw new Error("Unsupported faucet network.");
+  }
+  if (!isFaucetAmountWithinLimit(claim.amountEth, chain.nativeCurrency.decimals)) {
+    throw new Error(`Faucet amount must be ${FAUCET_AMOUNT_MAX_ETH} ETH or less.`);
   }
 
   const account = getFaucetAccount();
