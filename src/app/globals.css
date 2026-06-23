@@ -269,31 +269,92 @@ img {
 }
 
 .landing-actions .guide-button {
-  color: #171000;
+  position: relative;
+  min-width: min(100%, 300px);
+  min-height: 54px;
+  padding-inline: 32px;
+  color: #ffffff;
   background:
-    linear-gradient(180deg, #fff2a6 0%, var(--gold) 48%, #c58a11 100%);
-  border-color: #fff9cb;
+    linear-gradient(180deg, #0c5ca9 0%, #073d7c 52%, #041e46 100%);
+  border-color: rgba(196, 159, 82, 0.76);
   box-shadow:
-    inset 0 -4px 0 rgba(105, 56, 0, 0.45),
-    inset 0 3px 0 rgba(255, 255, 255, 0.5),
+    inset 0 0 0 2px #052c64,
+    inset 0 4px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.48),
     0 0 0 2px #050505,
-    0 0 0 5px rgba(255, 216, 74, 0.26),
+    0 0 0 3px rgba(116, 83, 31, 0.58),
     0 5px 0 rgba(0, 0, 0, 0.78);
   text-shadow:
-    1px 1px 0 rgba(255, 255, 255, 0.7),
-    -1px 0 0 rgba(83, 47, 0, 0.18);
+    2px 0 0 #000,
+    0 2px 0 #000,
+    1px 1px 0 #000;
+}
+
+.landing-actions .guide-button::before,
+.landing-actions .guide-button::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  background: linear-gradient(135deg, rgba(114, 189, 255, 0.7) 0 46%, rgba(248, 201, 91, 0.72) 48% 100%);
+  border: 1px solid rgba(9, 38, 90, 0.78);
+  opacity: 0.72;
+  box-shadow:
+    0 0 0 1px rgba(248, 201, 91, 0.42),
+    0 0 0 2px rgba(0, 0, 0, 0.38);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.landing-actions .guide-button::before {
+  left: 12px;
+}
+
+.landing-actions .guide-button::after {
+  right: 12px;
+}
+
+.landing-actions .entry-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 68px;
+  padding-inline: 24px;
+  border-color: #ffe38a;
+  font-size: 1.08rem;
+  box-shadow:
+    inset 0 0 0 2px rgba(6, 44, 110, 0.95),
+    inset 0 4px 0 rgba(255, 255, 255, 0.26),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 2px #050505,
+    0 0 0 5px #d2962f,
+    0 0 0 7px rgba(255, 224, 112, 0.3),
+    0 6px 0 rgba(0, 0, 0, 0.78);
 }
 
 .landing-actions .guide-button:hover,
 .landing-actions .guide-button:focus-visible {
-  color: #050505;
+  color: #ffffff;
+  border-color: #d4b86f;
+  box-shadow:
+    inset 0 0 0 2px #063473,
+    inset 0 4px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.42),
+    0 0 0 2px #050505,
+    0 0 0 3px rgba(162, 118, 45, 0.7),
+    0 5px 0 rgba(0, 0, 0, 0.78);
+}
+
+.landing-actions .entry-button:hover,
+.landing-actions .entry-button:focus-visible {
   border-color: #ffffff;
   box-shadow:
-    inset 0 -4px 0 rgba(105, 56, 0, 0.38),
-    inset 0 3px 0 rgba(255, 255, 255, 0.62),
+    inset 0 0 0 2px rgba(7, 54, 128, 0.98),
+    inset 0 4px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -5px 0 rgba(0, 0, 0, 0.44),
     0 0 0 2px #050505,
-    0 0 0 6px rgba(255, 232, 122, 0.38),
-    0 5px 0 rgba(0, 0, 0, 0.78);
+    0 0 0 5px #efb34b,
+    0 0 0 8px rgba(255, 232, 122, 0.42),
+    0 6px 0 rgba(0, 0, 0, 0.78);
 }
 
 .landing-actions .pixel-button.secondary {
@@ -329,10 +390,16 @@ img {
 }
 
 .landing-buttons {
+  width: min(100%, 360px);
   min-width: 220px;
   display: grid;
+  align-items: center;
   justify-items: end;
-  gap: 12px;
+  gap: 24px;
+}
+
+.landing-actions .wallet-login {
+  width: min(100%, 360px);
 }
 
 .admin-login-page {

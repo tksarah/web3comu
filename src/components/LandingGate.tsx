@@ -26,15 +26,9 @@ export function LandingGate() {
           </div>
           <div className="landing-buttons">
             <Link className="pixel-button guide-button" href="/guide">
-              はじめに
+              はじめての方はこちらへ
             </Link>
-            <WalletLoginButton intent="member" label="ウォレット接続" redirectTo="/portal" />
-            <Link className="pixel-button secondary" href="/faucet">
-              Faucet
-            </Link>
-            <Link className="text-link" href="/admin">
-              管理ページ
-            </Link>
+            <WalletLoginButton intent="member" label="入口（ウォレット接続）" redirectTo="/portal" className="pixel-button entry-button" />
           </div>
         </section>
       </div>
