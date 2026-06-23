@@ -17,7 +17,7 @@ export function LandingGate() {
           sizes="(max-width: 720px) calc(100vw - 36px), 1180px"
         />
         <section className="pixel-panel landing-actions" aria-label="Web3コミュニティポータルへの入口">
-          <div>
+          <div className="landing-copy">
             <div className="landing-title-row">
               <img className="landing-title-icon" src="/icons/site-crest-512.png" alt="" aria-hidden="true" />
               <h1>Web3コミュニティポータル</h1>
