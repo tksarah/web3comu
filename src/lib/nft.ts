@@ -184,6 +184,9 @@ export async function getMemberBadgeStatus(
   if (!badge.enabled || !badge.rpcUrl || !badge.contractAddress) {
     return { badge, owned: false };
   }
+  if ((badge.standard === "erc1155" || badge.checkMode === "tokenOwner") && !badge.tokenId) {
+    return { badge, owned: false };
+  }
 
   try {
     const wallet = getAddress(walletAddress) as Address;

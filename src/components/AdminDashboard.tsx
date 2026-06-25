@@ -141,6 +141,24 @@ function normalizeBadgeForStandard(badge: BadgeConfig, standard: BadgeConfig["st
   };
 }
 
+function badgeNeedsTokenId(badge: BadgeConfig) {
+  return badge.standard === "erc1155" || badge.checkMode === "tokenOwner";
+}
+
+function getBadgeSetupLabel(badge: BadgeConfig) {
+  if (!badge.contractAddress.trim()) {
+    return "下書き: Contract未設定";
+  }
+  if (badgeNeedsTokenId(badge) && !badge.tokenId?.trim()) {
+    return "下書き: tokenId未設定";
+  }
+  return "設定済み";
+}
+
+function getBadgeKey(badge: BadgeConfig, index: number) {
+  return `${badge.id}:${index}`;
+}
+
 export function AdminDashboard({
   initialConfig,
   initialBadges,
@@ -164,6 +182,7 @@ export function AdminDashboard({
   const [testResult, setTestResult] = useState<NftTestResult | null>(null);
   const [testing, setTesting] = useState(false);
   const [activeAdminPanel, setActiveAdminPanel] = useState<AdminPanel>("members");
+  const [openBadgeKeys, setOpenBadgeKeys] = useState<string[]>([]);
 
   async function saveConfig(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -244,16 +263,32 @@ export function AdminDashboard({
     setBadges((current) => current.map((badge, badgeIndex) => (badgeIndex === index ? nextBadge : badge)));
   }
 
+  function toggleBadge(badge: BadgeConfig, index: number) {
+    const badgeKey = getBadgeKey(badge, index);
+    setOpenBadgeKeys((current) =>
+      current.includes(badgeKey) ? current.filter((key) => key !== badgeKey) : [...current, badgeKey]
+    );
+  }
+
   function addBadge() {
-    setBadges((current) => [...current, createBadgeDraft(current.length)]);
+    setBadges((current) => {
+      const draft = createBadgeDraft(current.length);
+      setOpenBadgeKeys((keys) => [...keys, getBadgeKey(draft, current.length)]);
+      return [...current, draft];
+    });
   }
 
   function removeBadge(index: number) {
-    setBadges((current) =>
-      current
+    setBadges((current) => {
+      const removedBadge = current[index];
+      if (removedBadge) {
+        const removedKey = getBadgeKey(removedBadge, index);
+        setOpenBadgeKeys((keys) => keys.filter((key) => key !== removedKey));
+      }
+      return current
         .filter((_, badgeIndex) => badgeIndex !== index)
-        .map((badge, displayOrder) => ({ ...badge, displayOrder }))
-    );
+        .map((badge, displayOrder) => ({ ...badge, displayOrder }));
+    });
   }
 
   async function saveBadges(event: FormEvent<HTMLFormElement>) {
@@ -625,111 +660,153 @@ export function AdminDashboard({
 
               <div className="badge-admin-list">
                 {badges.length ? (
-                  badges.map((badge, index) => (
-                    <article className="badge-admin-row" key={badge.id}>
-                      <div className="section-head compact">
-                        <h3>{badge.label || "バッヂ"}</h3>
-                        <button className="member-action-button secondary" type="button" onClick={() => removeBadge(index)}>
-                          削除
-                        </button>
-                      </div>
-                      <label className="toggle-row nft-enable-toggle">
-                        <input
-                          checked={badge.enabled}
-                          type="checkbox"
-                          onChange={(event) => updateBadge(index, { ...badge, enabled: event.target.checked })}
-                        />
-                        <span>このバッヂを表示対象にする</span>
-                      </label>
-                      <div className="form-grid">
-                        <label>
-                          <span>表示名</span>
-                          <input value={badge.label} onChange={(event) => updateBadge(index, { ...badge, label: event.target.value })} />
-                        </label>
-                        <label>
-                          <span>表示順</span>
-                          <input
-                            type="number"
-                            value={badge.displayOrder}
-                            onChange={(event) => updateBadge(index, { ...badge, displayOrder: Number(event.target.value) })}
-                          />
-                        </label>
-                      </div>
-                      <label>
-                        <span>サムネイルURL</span>
-                        <input
-                          placeholder="/images/badge.webp"
-                          value={badge.thumbnailUrl || ""}
-                          onChange={(event) => updateBadge(index, { ...badge, thumbnailUrl: event.target.value || null })}
-                        />
-                      </label>
-                      <div className="form-grid">
-                        <label>
-                          <span>chainId</span>
-                          <input
-                            min={1}
-                            type="number"
-                            value={badge.chainId}
-                            onChange={(event) => updateBadge(index, { ...badge, chainId: Number(event.target.value) })}
-                          />
-                        </label>
-                        <label>
-                          <span>トークン規格</span>
-                          <select
-                            value={badge.standard}
-                            onChange={(event) =>
-                              updateBadge(index, normalizeBadgeForStandard(badge, event.target.value as BadgeConfig["standard"]))
-                            }
+                  badges.map((badge, index) => {
+                    const badgeKey = getBadgeKey(badge, index);
+                    const isOpen = openBadgeKeys.includes(badgeKey);
+                    const setupLabel = getBadgeSetupLabel(badge);
+
+                    return (
+                      <article className={`badge-admin-row ${isOpen ? "open" : "collapsed"}`} key={badgeKey}>
+                        <div className="badge-admin-summary">
+                          <button
+                            aria-expanded={isOpen}
+                            className="badge-admin-toggle"
+                            type="button"
+                            onClick={() => toggleBadge(badge, index)}
                           >
-                            <option value="erc721">ERC-721 / SBT</option>
-                            <option value="erc1155">ERC-1155 / SBT</option>
-                          </select>
-                        </label>
-                      </div>
-                      <label>
-                        <span>RPC URL</span>
-                        <input value={badge.rpcUrl} onChange={(event) => updateBadge(index, { ...badge, rpcUrl: event.target.value })} />
-                      </label>
-                      <label>
-                        <span>Contract Address</span>
-                        <input
-                          value={badge.contractAddress}
-                          onChange={(event) => updateBadge(index, { ...badge, contractAddress: event.target.value })}
-                        />
-                      </label>
-                      <div className="form-grid">
-                        <label>
-                          <span>判定モード</span>
-                          <select
-                            disabled={badge.standard !== "erc721"}
-                            value={badge.checkMode}
-                            onChange={(event) =>
-                              updateBadge(index, { ...badge, checkMode: event.target.value as BadgeConfig["checkMode"] })
-                            }
-                          >
-                            {badge.standard === "erc1155" ? <option value="balance">ERC-1155 token balance</option> : null}
-                            {badge.standard === "erc721" ? (
-                              <>
-                                <option value="collection">ERC-721 collection balance</option>
-                                <option value="tokenOwner">ERC-721 token owner</option>
-                              </>
-                            ) : null}
-                          </select>
-                        </label>
-                        {badge.standard === "erc1155" || badge.checkMode === "tokenOwner" ? (
-                          <label>
-                            <span>tokenId</span>
-                            <input
-                              value={badge.tokenId || ""}
-                              onChange={(event) => updateBadge(index, { ...badge, tokenId: event.target.value || null })}
-                            />
-                          </label>
-                        ) : (
-                          <div aria-hidden="true" />
-                        )}
-                      </div>
-                    </article>
-                  ))
+                            <span className="badge-admin-chevron" aria-hidden="true">
+                              {isOpen ? "▲" : "▼"}
+                            </span>
+                            <span className="badge-admin-title">
+                              <strong>{badge.label || "バッヂ"}</strong>
+                              <small>
+                                {badge.standard.toUpperCase()} / {badge.checkMode} / 表示順 {badge.displayOrder}
+                              </small>
+                            </span>
+                          </button>
+                          <div className="badge-admin-meta">
+                            <span className={`status-badge ${badge.enabled ? "enabled" : "disabled"}`}>
+                              {badge.enabled ? "表示" : "非表示"}
+                            </span>
+                            <span className={`status-badge ${setupLabel === "設定済み" ? "enabled" : "disabled"}`}>
+                              {setupLabel}
+                            </span>
+                            <button className="member-action-button secondary" type="button" onClick={() => removeBadge(index)}>
+                              削除
+                            </button>
+                          </div>
+                        </div>
+
+                        {isOpen ? (
+                          <div className="badge-admin-fields">
+                            <label className="toggle-row nft-enable-toggle">
+                              <input
+                                checked={badge.enabled}
+                                type="checkbox"
+                                onChange={(event) => updateBadge(index, { ...badge, enabled: event.target.checked })}
+                              />
+                              <span>このバッヂを表示対象にする</span>
+                            </label>
+                            <div className="form-grid">
+                              <label>
+                                <span>表示名</span>
+                                <input
+                                  value={badge.label}
+                                  onChange={(event) => updateBadge(index, { ...badge, label: event.target.value })}
+                                />
+                              </label>
+                              <label>
+                                <span>表示順</span>
+                                <input
+                                  type="number"
+                                  value={badge.displayOrder}
+                                  onChange={(event) => updateBadge(index, { ...badge, displayOrder: Number(event.target.value) })}
+                                />
+                              </label>
+                            </div>
+                            <label>
+                              <span>サムネイルURL</span>
+                              <input
+                                placeholder="/images/badge.webp"
+                                value={badge.thumbnailUrl || ""}
+                                onChange={(event) => updateBadge(index, { ...badge, thumbnailUrl: event.target.value || null })}
+                              />
+                            </label>
+                            <div className="form-grid">
+                              <label>
+                                <span>chainId</span>
+                                <input
+                                  min={1}
+                                  type="number"
+                                  value={badge.chainId}
+                                  onChange={(event) => updateBadge(index, { ...badge, chainId: Number(event.target.value) })}
+                                />
+                              </label>
+                              <label>
+                                <span>トークン規格</span>
+                                <select
+                                  value={badge.standard}
+                                  onChange={(event) =>
+                                    updateBadge(index, normalizeBadgeForStandard(badge, event.target.value as BadgeConfig["standard"]))
+                                  }
+                                >
+                                  <option value="erc721">ERC-721 / SBT</option>
+                                  <option value="erc1155">ERC-1155 / SBT</option>
+                                </select>
+                              </label>
+                            </div>
+                            <label>
+                              <span>RPC URL</span>
+                              <input
+                                value={badge.rpcUrl}
+                                onChange={(event) => updateBadge(index, { ...badge, rpcUrl: event.target.value })}
+                              />
+                            </label>
+                            <label>
+                              <span>Contract Address</span>
+                              <input
+                                placeholder="未定の場合は空欄で保存できます"
+                                value={badge.contractAddress}
+                                onChange={(event) => updateBadge(index, { ...badge, contractAddress: event.target.value })}
+                              />
+                            </label>
+                            <div className="form-grid">
+                              <label>
+                                <span>判定モード</span>
+                                <select
+                                  disabled={badge.standard !== "erc721"}
+                                  value={badge.checkMode}
+                                  onChange={(event) =>
+                                    updateBadge(index, { ...badge, checkMode: event.target.value as BadgeConfig["checkMode"] })
+                                  }
+                                >
+                                  {badge.standard === "erc1155" ? <option value="balance">ERC-1155 token balance</option> : null}
+                                  {badge.standard === "erc721" ? (
+                                    <>
+                                      <option value="collection">ERC-721 collection balance</option>
+                                      <option value="tokenOwner">ERC-721 token owner</option>
+                                    </>
+                                  ) : null}
+                                </select>
+                              </label>
+                              {badgeNeedsTokenId(badge) ? (
+                                <label>
+                                  <span>tokenId</span>
+                                  <input
+                                    placeholder="未定の場合は空欄で保存できます"
+                                    value={badge.tokenId || ""}
+                                    onChange={(event) => updateBadge(index, { ...badge, tokenId: event.target.value || null })}
+                                  />
+                                </label>
+                              ) : (
+                                <div aria-hidden="true" />
+                              )}
+                            </div>
+                          </div>
+                        ) : null}
+                      </article>
+                    );
+                  })
                 ) : (
                   <p className="empty-state">バッヂ設定はまだありません。</p>
                 )}

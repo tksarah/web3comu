@@ -37,7 +37,7 @@ function createBadgeConfigTable(database: DatabaseSync) {
       label TEXT NOT NULL,
       chain_id INTEGER NOT NULL,
       rpc_url TEXT NOT NULL,
-      contract_address TEXT NOT NULL,
+      contract_address TEXT,
       standard TEXT NOT NULL CHECK (standard IN ('erc721', 'erc1155')),
       check_mode TEXT NOT NULL CHECK (check_mode IN ('collection', 'tokenOwner', 'balance')),
       token_id TEXT,
@@ -50,6 +50,60 @@ function createBadgeConfigTable(database: DatabaseSync) {
     CREATE INDEX IF NOT EXISTS idx_badge_configs_enabled_order
       ON badge_configs(enabled, display_order, id);
   `);
+}
+
+function badgeConfigNeedsMigration(database: DatabaseSync) {
+  const columns = database.prepare("PRAGMA table_info(badge_configs)").all() as Array<{
+    name: string;
+    notnull: number;
+  }>;
+  const contractAddressColumn = columns.find((column) => column.name === "contract_address");
+
+  return contractAddressColumn?.notnull === 1;
+}
+
+function migrateBadgeConfigTable(database: DatabaseSync) {
+  if (!badgeConfigNeedsMigration(database)) {
+    return;
+  }
+
+  const existing = database.prepare("SELECT * FROM badge_configs ORDER BY display_order ASC, id ASC").all() as Array<
+    Record<string, unknown>
+  >;
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    database.exec("DROP TABLE badge_configs");
+    createBadgeConfigTable(database);
+
+    const insert = database.prepare(
+      `INSERT INTO badge_configs (
+        id, label, chain_id, rpc_url, contract_address, standard, check_mode,
+        token_id, thumbnail_url, display_order, enabled, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+
+    for (const row of existing) {
+      insert.run(
+        number(row.id, 0),
+        text(row.label, "バッヂ"),
+        number(row.chain_id, SONEIUM_MAINNET.id),
+        text(row.rpc_url, getDefaultRpcUrl()),
+        text(row.contract_address) || null,
+        normalizeStandard(row.standard) === "erc1155" ? "erc1155" : "erc721",
+        normalizeCheckMode(String(row.standard || "erc721"), row.check_mode),
+        row.token_id ? text(row.token_id) : null,
+        row.thumbnail_url ? text(row.thumbnail_url) : null,
+        number(row.display_order, 0),
+        number(row.enabled, 1),
+        text(row.updated_at, new Date().toISOString())
+      );
+    }
+
+    database.exec("COMMIT");
+  } catch (error) {
+    database.exec("ROLLBACK");
+    throw error;
+  }
 }
 
 function createFaucetTables(database: DatabaseSync) {
@@ -331,6 +385,7 @@ function openDatabase() {
   `);
   createNftConfigTable(database);
   createBadgeConfigTable(database);
+  migrateBadgeConfigTable(database);
   createFaucetTables(database);
   createPortalContentTable(database);
   migrateFaucetClaimsTable(database);

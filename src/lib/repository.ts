@@ -161,7 +161,7 @@ function mapNftConfig(row: Row): NftConfig {
     id: Number(row.id),
     chainId: Number(row.chain_id),
     rpcUrl: text(row.rpc_url),
-    contractAddress: text(row.contract_address),
+    contractAddress: row.contract_address ? text(row.contract_address) : "",
     standard: text(row.standard) as NftStandard,
     checkMode: text(row.check_mode) as NftCheckMode,
     tokenId: row.token_id ? text(row.token_id) : null,
@@ -392,7 +392,7 @@ function normalizeBadgeConfigInput(input: BadgeConfigInput, fallbackOrder: numbe
   const label = text(input.label).trim().slice(0, 80);
   const chainId = Number(input.chainId);
   const rpcUrl = normalizeRequiredRpcUrl(input.rpcUrl);
-  const contractAddress = text(input.contractAddress).trim();
+  const contractAddress = nullableText(input.contractAddress, 120);
   const standard = text(input.standard) as BadgeStandard;
   let checkMode = (text(input.checkMode) || "collection") as NftCheckMode;
   let tokenId = nullableText(input.tokenId, 120);
@@ -404,24 +404,16 @@ function normalizeBadgeConfigInput(input: BadgeConfigInput, fallbackOrder: numbe
   if (!Number.isInteger(chainId) || chainId <= 0) {
     throw new Error("badge chainId must be a positive integer.");
   }
-  if (!contractAddress) {
-    throw new Error("バッヂのContract Addressは必須です。");
-  }
   if (standard !== "erc721" && standard !== "erc1155") {
     throw new Error("バッヂのトークン規格が不正です。");
   }
   if (standard === "erc1155") {
     checkMode = "balance";
-    if (!tokenId) {
-      throw new Error("ERC-1155バッヂにはtokenIdが必要です。");
-    }
-  } else if (checkMode === "tokenOwner") {
-    if (!tokenId) {
-      throw new Error("ERC-721 token ownerバッヂにはtokenIdが必要です。");
-    }
   } else {
-    checkMode = "collection";
-    tokenId = null;
+    if (checkMode !== "tokenOwner") {
+      checkMode = "collection";
+      tokenId = null;
+    }
   }
 
   return {

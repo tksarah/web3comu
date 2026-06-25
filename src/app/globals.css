@@ -1113,6 +1113,79 @@ img {
   font-size: 1rem;
 }
 
+.badge-admin-row.collapsed {
+  gap: 0;
+}
+
+.badge-admin-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.badge-admin-toggle {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.badge-admin-toggle:hover strong,
+.badge-admin-toggle:focus-visible strong {
+  color: var(--gold);
+}
+
+.badge-admin-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+
+.badge-admin-chevron {
+  width: 22px;
+  color: var(--gold);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.badge-admin-title {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.badge-admin-title strong {
+  color: #ffffff;
+  overflow-wrap: anywhere;
+}
+
+.badge-admin-title small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  overflow-wrap: anywhere;
+}
+
+.badge-admin-meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-admin-fields {
+  display: grid;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--muted-line);
+}
+
 .member-admin-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
