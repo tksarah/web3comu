@@ -10,7 +10,7 @@ export function LandingGate() {
         <Image
           priority
           className="landing-image"
-          src="/images/top.png"
+          src="/images/top.webp"
           alt="Web3コミュニティポータル"
           width={1774}
           height={887}

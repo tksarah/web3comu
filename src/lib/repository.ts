@@ -1,6 +1,8 @@
 import { getDb, runTransaction } from "@/lib/db";
 import { getFaucetChain } from "@/lib/chains";
 import type {
+  BadgeConfig,
+  BadgeStandard,
   FaucetAllowlistEntry,
   FaucetClaim,
   FaucetClaimStatus,
@@ -28,6 +30,20 @@ type NftConfigInput = {
   tokenId: unknown;
   minBalance: unknown;
   tokenDecimals: unknown;
+  enabled: unknown;
+};
+
+type BadgeConfigInput = {
+  id?: unknown;
+  label: unknown;
+  chainId: unknown;
+  rpcUrl: unknown;
+  contractAddress: unknown;
+  standard: unknown;
+  checkMode: unknown;
+  tokenId: unknown;
+  thumbnailUrl: unknown;
+  displayOrder: unknown;
   enabled: unknown;
 };
 
@@ -153,6 +169,23 @@ function mapNftConfig(row: Row): NftConfig {
     tokenDecimals: Number(row.token_decimals ?? 18),
     enabled: fromDbBool(row.enabled),
     version: Number(row.version),
+    updatedAt: text(row.updated_at)
+  };
+}
+
+function mapBadgeConfig(row: Row): BadgeConfig {
+  return {
+    id: Number(row.id),
+    label: text(row.label),
+    chainId: Number(row.chain_id),
+    rpcUrl: text(row.rpc_url),
+    contractAddress: text(row.contract_address),
+    standard: text(row.standard) as BadgeStandard,
+    checkMode: text(row.check_mode) as NftCheckMode,
+    tokenId: row.token_id ? text(row.token_id) : null,
+    thumbnailUrl: row.thumbnail_url ? text(row.thumbnail_url) : null,
+    displayOrder: Number(row.display_order ?? 0),
+    enabled: fromDbBool(row.enabled),
     updatedAt: text(row.updated_at)
   };
 }
@@ -303,6 +336,33 @@ function nullableHttpUrl(value: unknown) {
   return raw;
 }
 
+function nullableImageUrl(value: unknown) {
+  const raw = text(value).trim();
+  if (!raw) {
+    return null;
+  }
+  if (raw.length > 1200) {
+    throw new Error("サムネイルURLは1200文字以内で入力してください。");
+  }
+  if (raw.startsWith("/")) {
+    return raw;
+  }
+
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error("サムネイルURLはhttp、https、または/から始めてください。");
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("サムネイルURL")) {
+      throw error;
+    }
+    throw new Error("サムネイルURLの形式が正しくありません。");
+  }
+
+  return raw;
+}
+
 function normalizeRequiredRpcUrl(value: unknown) {
   const raw = text(value).trim();
   if (!raw) {
@@ -325,6 +385,58 @@ function normalizeRequiredRpcUrl(value: unknown) {
   }
 
   return raw;
+}
+
+function normalizeBadgeConfigInput(input: BadgeConfigInput, fallbackOrder: number) {
+  const id = Number(input.id || 0);
+  const label = text(input.label).trim().slice(0, 80);
+  const chainId = Number(input.chainId);
+  const rpcUrl = normalizeRequiredRpcUrl(input.rpcUrl);
+  const contractAddress = text(input.contractAddress).trim();
+  const standard = text(input.standard) as BadgeStandard;
+  let checkMode = (text(input.checkMode) || "collection") as NftCheckMode;
+  let tokenId = nullableText(input.tokenId, 120);
+  const displayOrder = Number(input.displayOrder ?? fallbackOrder);
+
+  if (!label) {
+    throw new Error("バッヂ名は必須です。");
+  }
+  if (!Number.isInteger(chainId) || chainId <= 0) {
+    throw new Error("badge chainId must be a positive integer.");
+  }
+  if (!contractAddress) {
+    throw new Error("バッヂのContract Addressは必須です。");
+  }
+  if (standard !== "erc721" && standard !== "erc1155") {
+    throw new Error("バッヂのトークン規格が不正です。");
+  }
+  if (standard === "erc1155") {
+    checkMode = "balance";
+    if (!tokenId) {
+      throw new Error("ERC-1155バッヂにはtokenIdが必要です。");
+    }
+  } else if (checkMode === "tokenOwner") {
+    if (!tokenId) {
+      throw new Error("ERC-721 token ownerバッヂにはtokenIdが必要です。");
+    }
+  } else {
+    checkMode = "collection";
+    tokenId = null;
+  }
+
+  return {
+    id: Number.isInteger(id) && id > 0 ? id : null,
+    label,
+    chainId,
+    rpcUrl,
+    contractAddress,
+    standard,
+    checkMode,
+    tokenId,
+    thumbnailUrl: nullableImageUrl(input.thumbnailUrl),
+    displayOrder: Number.isInteger(displayOrder) ? displayOrder : fallbackOrder,
+    enabled: bool(input.enabled)
+  };
 }
 
 function normalizePortalContentInput(input: PortalContentInput) {
@@ -360,6 +472,144 @@ export function getNftConfig() {
     throw new Error("Token config was not initialized.");
   }
   return mapNftConfig(row);
+}
+
+export function listBadgeConfigs(includeDisabled = true) {
+  const rows = getDb()
+    .prepare(
+      `SELECT * FROM badge_configs
+       ${includeDisabled ? "" : "WHERE enabled = 1"}
+       ORDER BY display_order ASC, id ASC`
+    )
+    .all() as Row[];
+  return rows.map(mapBadgeConfig);
+}
+
+export function saveBadgeConfigs(inputs: BadgeConfigInput[]) {
+  if (!Array.isArray(inputs)) {
+    throw new Error("バッヂ設定が正しくありません。");
+  }
+  const normalized = inputs.map((input, index) => normalizeBadgeConfigInput(input, index));
+
+  return runTransaction(() => {
+    const now = new Date().toISOString();
+    const keptIds: number[] = [];
+    const insert = getDb().prepare(
+      `INSERT INTO badge_configs (
+         label, chain_id, rpc_url, contract_address, standard, check_mode,
+         token_id, thumbnail_url, display_order, enabled, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    );
+    const update = getDb().prepare(
+      `UPDATE badge_configs
+       SET label = ?, chain_id = ?, rpc_url = ?, contract_address = ?, standard = ?,
+           check_mode = ?, token_id = ?, thumbnail_url = ?, display_order = ?,
+           enabled = ?, updated_at = ?
+       WHERE id = ?`
+    );
+
+    for (const badge of normalized) {
+      if (badge.id) {
+        update.run(
+          badge.label,
+          badge.chainId,
+          badge.rpcUrl,
+          badge.contractAddress,
+          badge.standard,
+          badge.checkMode,
+          badge.tokenId,
+          badge.thumbnailUrl,
+          badge.displayOrder,
+          badge.enabled ? 1 : 0,
+          now,
+          badge.id
+        );
+        keptIds.push(badge.id);
+      } else {
+        const result = insert.run(
+          badge.label,
+          badge.chainId,
+          badge.rpcUrl,
+          badge.contractAddress,
+          badge.standard,
+          badge.checkMode,
+          badge.tokenId,
+          badge.thumbnailUrl,
+          badge.displayOrder,
+          badge.enabled ? 1 : 0,
+          now
+        );
+        keptIds.push(Number(result.lastInsertRowid));
+      }
+    }
+
+    if (keptIds.length) {
+      const placeholders = keptIds.map(() => "?").join(", ");
+      getDb()
+        .prepare(`DELETE FROM badge_configs WHERE id NOT IN (${placeholders})`)
+        .run(...keptIds);
+    } else {
+      getDb().prepare("DELETE FROM badge_configs").run();
+    }
+
+    return listBadgeConfigs();
+  });
+}
+
+export function syncMembershipBadgeFromNftConfig() {
+  const config = getNftConfig();
+  const compatible = config.standard === "erc721" || config.standard === "erc1155";
+  if (!compatible) {
+    throw new Error("現在のメンバー条件はNFT/SBTバッヂとして同期できません。ERC-721またはERC-1155を設定してください。");
+  }
+
+  const existing = getDb()
+    .prepare("SELECT * FROM badge_configs WHERE label = '会員証' ORDER BY id ASC LIMIT 1")
+    .get() as Row | undefined;
+  const now = new Date().toISOString();
+  const checkMode = config.standard === "erc1155" ? "balance" : config.checkMode === "tokenOwner" ? "tokenOwner" : "collection";
+  const tokenId = config.standard === "erc1155" || checkMode === "tokenOwner" ? config.tokenId : null;
+
+  if (existing) {
+    getDb()
+      .prepare(
+        `UPDATE badge_configs
+         SET chain_id = ?, rpc_url = ?, contract_address = ?, standard = ?,
+             check_mode = ?, token_id = ?, enabled = ?, updated_at = ?
+         WHERE id = ?`
+      )
+      .run(
+        config.chainId,
+        config.rpcUrl,
+        config.contractAddress,
+        config.standard,
+        checkMode,
+        tokenId,
+        config.enabled ? 1 : 0,
+        now,
+        Number(existing.id)
+      );
+  } else {
+    getDb()
+      .prepare(
+        `INSERT INTO badge_configs (
+          label, chain_id, rpc_url, contract_address, standard, check_mode,
+          token_id, thumbnail_url, display_order, enabled, updated_at
+        ) VALUES ('会員証', ?, ?, ?, ?, ?, ?, NULL, 0, ?, ?)`
+      )
+      .run(
+        config.chainId,
+        config.rpcUrl,
+        config.contractAddress,
+        config.standard,
+        checkMode,
+        tokenId,
+        config.enabled ? 1 : 0,
+        now
+      );
+  }
+
+  return listBadgeConfigs();
 }
 
 export function saveNftConfig(input: NftConfigInput) {

@@ -30,6 +30,28 @@ function createNftConfigTable(database: DatabaseSync) {
   `);
 }
 
+function createBadgeConfigTable(database: DatabaseSync) {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS badge_configs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      label TEXT NOT NULL,
+      chain_id INTEGER NOT NULL,
+      rpc_url TEXT NOT NULL,
+      contract_address TEXT NOT NULL,
+      standard TEXT NOT NULL CHECK (standard IN ('erc721', 'erc1155')),
+      check_mode TEXT NOT NULL CHECK (check_mode IN ('collection', 'tokenOwner', 'balance')),
+      token_id TEXT,
+      thumbnail_url TEXT,
+      display_order INTEGER NOT NULL DEFAULT 0,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_badge_configs_enabled_order
+      ON badge_configs(enabled, display_order, id);
+  `);
+}
+
 function createFaucetTables(database: DatabaseSync) {
   database.exec(`
     CREATE TABLE IF NOT EXISTS faucet_settings (
@@ -129,6 +151,47 @@ function initializeFaucetSettings(database: DatabaseSync) {
   for (const chain of FAUCET_CHAINS) {
     statement.run(chain.id, chain.name, chain.rpcUrl, chain.explorerUrl, now);
   }
+}
+
+function initializeBadgeConfigs(database: DatabaseSync) {
+  const existing = database.prepare("SELECT COUNT(*) AS count FROM badge_configs").get() as
+    | { count?: number }
+    | undefined;
+  if (Number(existing?.count ?? 0) > 0) {
+    return;
+  }
+
+  const config = database.prepare("SELECT * FROM nft_config WHERE id = 1").get() as
+    | Record<string, unknown>
+    | undefined;
+  if (!config) {
+    return;
+  }
+
+  const standard = normalizeStandard(config.standard);
+  const compatible = standard === "erc721" || standard === "erc1155";
+  const contractAddress = text(config.contract_address);
+  const enabled = compatible && contractAddress ? number(config.enabled, 0) : 0;
+  const checkMode = normalizeCheckMode(standard, config.check_mode);
+
+  database
+    .prepare(
+      `INSERT INTO badge_configs (
+        label, chain_id, rpc_url, contract_address, standard, check_mode,
+        token_id, thumbnail_url, display_order, enabled, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 0, ?, ?)`
+    )
+    .run(
+      "会員証",
+      number(config.chain_id, SONEIUM_MAINNET.id),
+      text(config.rpc_url, getDefaultRpcUrl()),
+      contractAddress,
+      compatible ? standard : "erc721",
+      compatible ? checkMode : "collection",
+      config.token_id ? text(config.token_id) : null,
+      enabled,
+      new Date().toISOString()
+    );
 }
 
 function text(value: unknown, fallback = "") {
@@ -267,6 +330,7 @@ function openDatabase() {
     CREATE INDEX IF NOT EXISTS idx_members_public ON members(profile_public, force_profile_private, suspended);
   `);
   createNftConfigTable(database);
+  createBadgeConfigTable(database);
   createFaucetTables(database);
   createPortalContentTable(database);
   migrateFaucetClaimsTable(database);
@@ -301,6 +365,7 @@ function openDatabase() {
         .run(SONEIUM_MAINNET.id, getDefaultRpcUrl(), new Date().toISOString());
     }
   }
+  initializeBadgeConfigs(database);
 
   return database;
 }

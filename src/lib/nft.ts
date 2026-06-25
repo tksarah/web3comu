@@ -1,6 +1,6 @@
 import { createPublicClient, defineChain, getAddress, http, parseUnits, type Address } from "viem";
 
-import type { NftConfig } from "@/lib/types";
+import type { BadgeConfig, MemberBadgeStatus, NftConfig } from "@/lib/types";
 
 const erc20Abi = [
   {
@@ -62,7 +62,12 @@ export type NftVerificationResult = {
   reason?: string;
 };
 
-function createConfiguredClient(config: NftConfig) {
+type ChainConfig = {
+  chainId: number;
+  rpcUrl: string;
+};
+
+function createConfiguredClient(config: ChainConfig) {
   const chain = defineChain({
     id: config.chainId,
     name: `Configured chain ${config.chainId}`,
@@ -170,4 +175,57 @@ export async function verifyNftOwnership(
           : "トークン検証に失敗しました。RPC、chainId、コントラクト設定を確認してください。"
     };
   }
+}
+
+export async function getMemberBadgeStatus(
+  walletAddress: string,
+  badge: BadgeConfig
+): Promise<MemberBadgeStatus> {
+  if (!badge.enabled || !badge.rpcUrl || !badge.contractAddress) {
+    return { badge, owned: false };
+  }
+
+  try {
+    const wallet = getAddress(walletAddress) as Address;
+    const contractAddress = getAddress(badge.contractAddress) as Address;
+    const client = createConfiguredClient({ chainId: badge.chainId, rpcUrl: badge.rpcUrl });
+    const rpcChainId = await client.getChainId();
+    if (rpcChainId !== badge.chainId) {
+      return { badge, owned: false };
+    }
+
+    if (badge.standard === "erc1155") {
+      const balance = await client.readContract({
+        address: contractAddress,
+        abi: erc1155Abi,
+        functionName: "balanceOf",
+        args: [wallet, parseTokenId(badge.tokenId)]
+      });
+      return { badge, owned: BigInt(balance) >= 1n };
+    }
+
+    if (badge.checkMode === "tokenOwner") {
+      const owner = await client.readContract({
+        address: contractAddress,
+        abi: erc721Abi,
+        functionName: "ownerOf",
+        args: [parseTokenId(badge.tokenId)]
+      });
+      return { badge, owned: getAddress(owner).toLowerCase() === wallet.toLowerCase() };
+    }
+
+    const balance = await client.readContract({
+      address: contractAddress,
+      abi: erc721Abi,
+      functionName: "balanceOf",
+      args: [wallet]
+    });
+    return { badge, owned: BigInt(balance) >= 1n };
+  } catch {
+    return { badge, owned: false };
+  }
+}
+
+export async function getMemberBadgeStatuses(walletAddress: string, badges: BadgeConfig[]) {
+  return Promise.all(badges.map((badge) => getMemberBadgeStatus(walletAddress, badge)));
 }

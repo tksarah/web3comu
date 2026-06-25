@@ -3,6 +3,7 @@ import { AdminLogin } from "@/components/AdminLogin";
 import { getAdminContext } from "@/lib/auth";
 import {
   getNftConfig,
+  listBadgeConfigs,
   listAdminFaucetClaims,
   listAdminMembers,
   listAdminPortalContent,
@@ -24,6 +25,7 @@ export default async function AdminPage() {
       initialFaucetSettings={listFaucetSettings()}
       initialContents={listAdminPortalContent()}
       initialConfig={getNftConfig()}
+      initialBadges={listBadgeConfigs()}
       initialMembers={listAdminMembers()}
     />
   );

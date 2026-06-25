@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { PortalFrame } from "@/components/PortalFrame";
 import { getPortalContext } from "@/lib/auth";
 import { formatBmtAmount, getBmtPortalStatus } from "@/lib/bmt";
-import { countPublishedPortalContent, listPublishedPortalContent } from "@/lib/repository";
+import { getMemberBadgeStatuses } from "@/lib/nft";
+import { countPublishedPortalContent, listBadgeConfigs, listPublishedPortalContent } from "@/lib/repository";
 import type { PortalContent } from "@/lib/types";
 
 function shortAddress(address: string) {
@@ -35,6 +36,7 @@ export default async function PortalPage() {
   const latestResources = listPublishedPortalContent("resource", 1);
   const noticeCount = countPublishedPortalContent("notice");
   const resourceCount = countPublishedPortalContent("resource");
+  const badgeStatuses = await getMemberBadgeStatuses(context.session.walletAddress, listBadgeConfigs(false));
   const bmtBalanceLabel = bmtStatus ? formatBmtAmount(bmtStatus.balance) : "確認できません";
   const loginBonusLabel = bmtStatus
     ? bmtStatus.loginBonusClaimedToday
@@ -57,17 +59,17 @@ export default async function PortalPage() {
       <div className="portal-layout">
         <section className="portal-menu-grid" aria-label="ポータルメニュー">
           <Link className="menu-card image-menu-card" href="/portal/news">
-            <Image src="/images/info.png" alt="" width={256} height={256} sizes="128px" />
+            <Image src="/images/info.webp" alt="" width={256} height={256} sizes="128px" />
             <strong>おしらせ</strong>
             <span>{contentSummary(noticeCount, latestNotices[0])}</span>
           </Link>
           <Link className="menu-card image-menu-card" href="/portal/library">
-            <Image src="/images/items.png" alt="" width={256} height={256} sizes="128px" />
+            <Image src="/images/items.webp" alt="" width={256} height={256} sizes="128px" />
             <strong>ライブラリ</strong>
             <span>{contentSummary(resourceCount, latestResources[0])}</span>
           </Link>
           <Link className="menu-card image-menu-card" href="/portal/login-bonus">
-            <Image src="/images/treasure.png" alt="" width={256} height={256} sizes="128px" />
+            <Image src="/images/treasure.webp" alt="" width={256} height={256} sizes="128px" />
             <strong>ログインボーナス</strong>
             <span>{loginBonusLabel}</span>
           </Link>
@@ -85,6 +87,24 @@ export default async function PortalPage() {
               <img src="/images/wallet-small.svg" alt="" aria-hidden="true" />
               <span>ウォレット: {shortAddress(context.session.walletAddress)}</span>
             </p>
+            <div className="member-badge-section">
+              <h3>取得バッヂ</h3>
+              <div className="member-badge-grid">
+                {badgeStatuses.length ? (
+                  badgeStatuses.map(({ badge, owned }) => (
+                    <article className={`member-badge ${owned ? "owned" : "locked"}`} key={badge.id}>
+                      <div className="member-badge-thumb">
+                        {badge.thumbnailUrl ? <img src={badge.thumbnailUrl} alt="" /> : <span>NO IMAGE</span>}
+                      </div>
+                      <strong>{badge.label}</strong>
+                      <small>{owned ? "取得済み" : "未取得"}</small>
+                    </article>
+                  ))
+                ) : (
+                  <p className="empty-state">表示できるバッヂはまだありません。</p>
+                )}
+              </div>
+            </div>
           </section>
           <section className="pixel-panel status-panel">
             <h2>今日のクエスト</h2>

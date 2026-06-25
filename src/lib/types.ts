@@ -4,6 +4,8 @@ export type NftStandard = "erc20" | "erc721" | "erc1155";
 
 export type NftCheckMode = "collection" | "tokenOwner" | "balance";
 
+export type BadgeStandard = "erc721" | "erc1155";
+
 export type FaucetClaimStatus = "requested" | "submitted" | "confirmed" | "failed" | "cancelled";
 
 export type PortalContentType = "notice" | "resource";
@@ -23,6 +25,26 @@ export type NftConfig = {
   enabled: boolean;
   version: number;
   updatedAt: string;
+};
+
+export type BadgeConfig = {
+  id: number;
+  label: string;
+  chainId: number;
+  rpcUrl: string;
+  contractAddress: string;
+  standard: BadgeStandard;
+  checkMode: NftCheckMode;
+  tokenId: string | null;
+  thumbnailUrl: string | null;
+  displayOrder: number;
+  enabled: boolean;
+  updatedAt: string;
+};
+
+export type MemberBadgeStatus = {
+  badge: BadgeConfig;
+  owned: boolean;
 };
 
 export type MemberProfile = {

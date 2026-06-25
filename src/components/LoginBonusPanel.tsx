@@ -66,10 +66,14 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
   const [txHash, setTxHash] = useState<Hash | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rewardRevealed, setRewardRevealed] = useState(false);
 
-  const loadStatus = useCallback(async (options?: { preserveMessage?: boolean }) => {
+  const loadStatus = useCallback(async (options?: { preserveMessage?: boolean; preserveRewardAnimation?: boolean }) => {
     if (!options?.preserveMessage) {
       setMessage(null);
+    }
+    if (!options?.preserveRewardAnimation) {
+      setRewardRevealed(false);
     }
     setError(null);
 
@@ -127,11 +131,15 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
     void loadStatus();
   }, [loadStatus]);
 
+  const hasClaimedToday = status ? status.lastClaimDay === status.currentDay : false;
+  const rewardState = rewardRevealed ? "revealing" : hasClaimedToday ? "claimed" : "closed";
+
   async function claim() {
     setClaiming(true);
     setMessage(null);
     setError(null);
     setTxHash(null);
+    setRewardRevealed(false);
 
     try {
       if (!isBmtConfigured()) {
@@ -161,8 +169,9 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
         throw new Error("トランザクションが失敗しました。");
       }
 
+      setRewardRevealed(true);
       setMessage("ログインボーナスを受け取りました。");
-      await loadStatus({ preserveMessage: true });
+      await loadStatus({ preserveMessage: true, preserveRewardAnimation: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "ログインボーナスの受け取りに失敗しました。");
     } finally {
@@ -176,14 +185,32 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
       <p>
         接続ウォレットに１に１回だけ受け取れます。受け取りにはSoneium MinatoのETH（ガス代として）が必要です。
       </p>
-      <Image
-        className="login-bonus-art"
-        src="/images/bmt.png"
-        alt=""
-        width={520}
-        height={520}
-        sizes="260px"
-      />
+      <div className="login-bonus-reward-stage" data-state={rewardState} aria-live="polite">
+        <Image
+          className="login-bonus-art login-bonus-treasure"
+          src="/images/treasure2.webp"
+          alt=""
+          width={520}
+          height={520}
+          sizes="280px"
+        />
+        <Image
+          className="login-bonus-art login-bonus-open-treasure"
+          src="/images/treasure.webp"
+          alt=""
+          width={520}
+          height={520}
+          sizes="280px"
+        />
+        <Image
+          className="login-bonus-art login-bonus-bmt"
+          src="/images/bmt.webp"
+          alt=""
+          width={520}
+          height={520}
+          sizes="260px"
+        />
+      </div>
 
       <div className="bmt-stat-grid login-bonus-grid">
         <div className="test-result">

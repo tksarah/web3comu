@@ -145,17 +145,7 @@ img {
   padding: clamp(18px, 3vw, 36px);
   background:
     linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.58)),
-    url("/images/tile.png") center / 420px 420px repeat,
-    #02051a;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.58)),
-    image-set(
-      url("/images/optimized/tile-420.avif") type("image/avif") 1x,
-      url("/images/optimized/tile-840.avif") type("image/avif") 2x,
-      url("/images/optimized/tile-420.webp") type("image/webp") 1x,
-      url("/images/optimized/tile-840.webp") type("image/webp") 2x,
-      url("/images/tile.png") type("image/png") 1x
-    ) center / 420px 420px repeat,
+    url("/images/tile.webp") center / 420px 420px repeat,
     #02051a;
   background-position:
     center,
@@ -418,15 +408,7 @@ img {
   padding: 24px;
   background:
     linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
-    url("/images/admin-bg.png") center / cover fixed,
-    #050608;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
-    image-set(
-      url("/images/optimized/admin-bg-1600.avif") type("image/avif"),
-      url("/images/optimized/admin-bg-1600.webp") type("image/webp"),
-      url("/images/admin-bg.png") type("image/png")
-    ) center / cover fixed,
+    url("/images/admin-bg.webp") center / cover fixed,
     #050608;
 }
 
@@ -442,15 +424,7 @@ img {
   padding: 18px;
   background:
     linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
-    url("/images/portal-bg.png") center / cover fixed,
-    #050608;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
-    image-set(
-      url("/images/optimized/portal-bg-1600.avif") type("image/avif"),
-      url("/images/optimized/portal-bg-1600.webp") type("image/webp"),
-      url("/images/portal-bg.png") type("image/png")
-    ) center / cover fixed,
+    url("/images/portal-bg.webp") center / cover fixed,
     #050608;
 }
 
@@ -644,6 +618,78 @@ img {
   color: var(--muted);
   line-height: 1.7;
   overflow-wrap: anywhere;
+}
+
+.member-badge-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--muted-line);
+}
+
+.member-badge-section h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
+.member-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.member-badge {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 10px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--muted-line);
+  border-radius: 5px;
+}
+
+.member-badge.locked {
+  opacity: 0.42;
+  filter: grayscale(0.82);
+}
+
+.member-badge-thumb {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--muted);
+  background: #090b0e;
+  border: 2px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.68rem;
+}
+
+.member-badge-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-badge strong {
+  max-width: 100%;
+  color: #ffffff;
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+.member-badge small {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.member-badge.owned small {
+  color: var(--success);
 }
 
 .status-panel .status-icon-row {
@@ -915,15 +961,7 @@ img {
   padding: 22px;
   background:
     linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
-    url("/images/admin-bg.png") center / cover fixed,
-    #050608;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
-    image-set(
-      url("/images/optimized/admin-bg-1600.avif") type("image/avif"),
-      url("/images/optimized/admin-bg-1600.webp") type("image/webp"),
-      url("/images/admin-bg.png") type("image/png")
-    ) center / cover fixed,
+    url("/images/admin-bg.webp") center / cover fixed,
     #050608;
 }
 
@@ -1055,6 +1093,26 @@ img {
   gap: 12px;
 }
 
+.badge-admin-list {
+  display: grid;
+  gap: 16px;
+}
+
+.badge-admin-row {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--muted-line);
+  border-radius: 6px;
+}
+
+.badge-admin-row h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+}
+
 .member-admin-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -1170,15 +1228,7 @@ img {
   padding: 22px;
   background:
     linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
-    url("/images/portal-bg.png") center / cover fixed,
-    #050608;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
-    image-set(
-      url("/images/optimized/portal-bg-1600.avif") type("image/avif"),
-      url("/images/optimized/portal-bg-1600.webp") type("image/webp"),
-      url("/images/portal-bg.png") type("image/png")
-    ) center / cover fixed,
+    url("/images/portal-bg.webp") center / cover fixed,
     #050608;
 }
 
@@ -1293,11 +1343,171 @@ img {
   width: 100%;
 }
 
-.login-bonus-art {
-  width: min(100%, 260px);
+.login-bonus-reward-stage {
+  position: relative;
+  width: min(100%, 280px);
   aspect-ratio: 1;
+  display: grid;
+  place-items: center;
   justify-self: center;
+  isolation: isolate;
+  perspective: 760px;
+}
+
+.login-bonus-reward-stage::before {
+  position: absolute;
+  z-index: -1;
+  inset: 17%;
+  content: "";
+  background: radial-gradient(circle, rgba(255, 226, 112, 0.58), rgba(66, 142, 255, 0.08) 58%, transparent 72%);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.7);
+}
+
+.login-bonus-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
   object-fit: contain;
+}
+
+.login-bonus-bmt {
+  opacity: 0;
+  transform: translateY(40px) scale(0.46) rotateY(-120deg);
+  transform-style: preserve-3d;
+}
+
+.login-bonus-open-treasure {
+  opacity: 0;
+}
+
+.login-bonus-reward-stage[data-state="closed"] .login-bonus-treasure {
+  opacity: 1;
+}
+
+.login-bonus-reward-stage[data-state="closed"] .login-bonus-open-treasure,
+.login-bonus-reward-stage[data-state="closed"] .login-bonus-bmt {
+  opacity: 0;
+}
+
+.login-bonus-reward-stage[data-state="claimed"] .login-bonus-open-treasure,
+.login-bonus-reward-stage[data-state="claimed"] .login-bonus-treasure {
+  opacity: 0;
+}
+
+.login-bonus-reward-stage[data-state="claimed"] .login-bonus-bmt {
+  opacity: 1;
+  transform: none;
+}
+
+.login-bonus-reward-stage[data-state="revealing"]::before {
+  animation: login-bonus-glow 2400ms ease-out both;
+}
+
+.login-bonus-reward-stage[data-state="revealing"] .login-bonus-treasure {
+  animation: login-bonus-closed-chest 2400ms ease-out both;
+}
+
+.login-bonus-reward-stage[data-state="revealing"] .login-bonus-open-treasure {
+  animation: login-bonus-open-chest 2400ms ease-out both;
+}
+
+.login-bonus-reward-stage[data-state="revealing"] .login-bonus-bmt {
+  animation: login-bonus-bmt-reveal 1850ms 520ms cubic-bezier(0.18, 0.92, 0.2, 1.02) both;
+}
+
+@keyframes login-bonus-glow {
+  0% {
+    opacity: 0;
+    transform: scale(0.62);
+  }
+
+  35% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+
+  100% {
+    opacity: 0.72;
+    transform: scale(1.18);
+  }
+}
+
+@keyframes login-bonus-closed-chest {
+  0% {
+    filter: brightness(1);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  42% {
+    filter: brightness(1.25) drop-shadow(0 0 18px rgba(255, 226, 112, 0.78));
+    opacity: 1;
+    transform: translateY(8px) scale(1.05);
+  }
+
+  45% {
+    filter: brightness(1.16) drop-shadow(0 0 16px rgba(255, 226, 112, 0.62));
+    opacity: 0;
+    transform: translateY(10px) scale(1.04);
+  }
+
+  100% {
+    filter: brightness(1.08);
+    opacity: 0;
+    transform: translateY(10px) scale(1.04);
+  }
+}
+
+@keyframes login-bonus-open-chest {
+  0%,
+  34% {
+    filter: brightness(1);
+    opacity: 0;
+    transform: translateY(8px) scale(1.02);
+  }
+
+  45% {
+    filter: brightness(1.32) drop-shadow(0 0 22px rgba(255, 226, 112, 0.86));
+    opacity: 1;
+    transform: translateY(6px) scale(1.08);
+  }
+
+  100% {
+    filter: brightness(1.1) drop-shadow(0 0 18px rgba(255, 226, 112, 0.48));
+    opacity: 0.42;
+    transform: translateY(18px) scale(0.92);
+  }
+}
+
+@keyframes login-bonus-bmt-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(54px) scale(0.34) rotateY(-120deg);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translateY(12px) scale(0.58) rotateY(80deg);
+  }
+
+  52% {
+    opacity: 1;
+    transform: translateY(-74px) scale(1.08) rotateY(430deg);
+  }
+
+  76% {
+    opacity: 1;
+    transform: translateY(-38px) scale(1.16) rotateY(620deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotateY(720deg);
+  }
 }
 
 .guide-page {
@@ -1307,7 +1517,7 @@ img {
   padding: clamp(14px, 3vw, 34px);
   background:
     linear-gradient(rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.72)),
-    url("/images/tile.png") center / 420px 420px repeat,
+    url("/images/tile.webp") center / 420px 420px repeat,
     #050608;
 }
 
@@ -1377,6 +1587,29 @@ img {
   display: grid;
   gap: 12px;
   padding: clamp(20px, 3vw, 32px);
+}
+
+.guide-final {
+  grid-template-columns: minmax(260px, 0.92fr) minmax(0, 1.08fr);
+  align-items: center;
+  gap: clamp(18px, 3vw, 30px);
+}
+
+.guide-final-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 3px solid #fff;
+  border-radius: 3px;
+  box-shadow:
+    0 0 0 3px #050505,
+    0 0 0 6px rgba(249, 208, 76, 0.54),
+    0 16px 28px rgba(0, 0, 0, 0.38);
+}
+
+.guide-final-copy {
+  display: grid;
+  gap: 12px;
 }
 
 .guide-intro h2,
@@ -1595,40 +1828,19 @@ img {
   .admin-login-page {
     background-image:
       linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
-      url("/images/admin-bg.png");
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.36), rgba(0, 0, 0, 0.64)),
-      image-set(
-        url("/images/optimized/admin-bg-1200.avif") type("image/avif"),
-        url("/images/optimized/admin-bg-1200.webp") type("image/webp"),
-        url("/images/admin-bg.png") type("image/png")
-      );
+      url("/images/admin-bg.webp");
   }
 
   .portal-page {
     background-image:
       linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
-      url("/images/portal-bg.png");
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.58)),
-      image-set(
-        url("/images/optimized/portal-bg-1200.avif") type("image/avif"),
-        url("/images/optimized/portal-bg-1200.webp") type("image/webp"),
-        url("/images/portal-bg.png") type("image/png")
-      );
+      url("/images/portal-bg.webp");
   }
 
   .faucet-page {
     background-image:
       linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
-      url("/images/portal-bg.png");
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.66)),
-      image-set(
-        url("/images/optimized/portal-bg-1200.avif") type("image/avif"),
-        url("/images/optimized/portal-bg-1200.webp") type("image/webp"),
-        url("/images/portal-bg.png") type("image/png")
-      );
+      url("/images/portal-bg.webp");
   }
 
   .landing-image {
@@ -1655,6 +1867,10 @@ img {
 
   .guide-hero-copy p:last-child {
     font-size: 1rem;
+  }
+
+  .guide-final {
+    grid-template-columns: 1fr;
   }
 
   .guide-cta-row {
@@ -1742,15 +1958,7 @@ img {
   color: var(--admin-text);
   background:
     linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
-    url("/images/admin-bg.png") center / cover fixed,
-    #050608;
-  background:
-    linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
-    image-set(
-      url("/images/optimized/admin-bg-1600.avif") type("image/avif"),
-      url("/images/optimized/admin-bg-1600.webp") type("image/webp"),
-      url("/images/admin-bg.png") type("image/png")
-    ) center / cover fixed,
+    url("/images/admin-bg.webp") center / cover fixed,
     #050608;
   font-family:
     "Noto Sans JP",
@@ -2377,14 +2585,7 @@ img {
     background-attachment: scroll;
     background-image:
       linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
-      url("/images/admin-bg.png");
-    background-image:
-      linear-gradient(rgba(5, 9, 16, 0.34), rgba(5, 9, 16, 0.66)),
-      image-set(
-        url("/images/optimized/admin-bg-1200.avif") type("image/avif"),
-        url("/images/optimized/admin-bg-1200.webp") type("image/webp"),
-        url("/images/admin-bg.png") type("image/png")
-      );
+      url("/images/admin-bg.webp");
   }
 
   .admin-page .admin-header {
@@ -2427,6 +2628,10 @@ img {
   animation: page-transition-fade-in 220ms ease-out both;
 }
 
+.page-transition-content[data-suppress-entry="true"] {
+  animation: none;
+}
+
 .page-transition-overlay {
   position: fixed;
   z-index: 9999;
@@ -2454,6 +2659,32 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .page-transition-content {
     animation: none;
+  }
+
+  .login-bonus-reward-stage::before,
+  .login-bonus-reward-stage[data-state="revealing"] .login-bonus-treasure,
+  .login-bonus-reward-stage[data-state="revealing"] .login-bonus-open-treasure,
+  .login-bonus-reward-stage[data-state="revealing"] .login-bonus-bmt {
+    animation: none;
+  }
+
+  .login-bonus-reward-stage[data-state="revealing"]::before {
+    opacity: 0.72;
+    transform: scale(1.18);
+  }
+
+  .login-bonus-reward-stage[data-state="revealing"] .login-bonus-treasure {
+    opacity: 0;
+  }
+
+  .login-bonus-reward-stage[data-state="revealing"] .login-bonus-open-treasure {
+    opacity: 0.42;
+    transform: translateY(18px) scale(0.92);
+  }
+
+  .login-bonus-reward-stage[data-state="revealing"] .login-bonus-bmt {
+    opacity: 1;
+    transform: none;
   }
 
   .page-transition-overlay {
