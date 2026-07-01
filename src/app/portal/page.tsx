@@ -73,6 +73,11 @@ export default async function PortalPage() {
             <strong>ログインボーナス</strong>
             <span>{loginBonusLabel}</span>
           </Link>
+          <Link className="menu-card image-menu-card" href="/portal/learn">
+            <Image src="/images/wallet-small.svg" alt="" width={256} height={256} sizes="128px" />
+            <strong>体験学習</strong>
+            <span>Lesson一覧から順番にWeb3操作を体験する</span>
+          </Link>
         </section>
 
         <aside className="portal-sidebar">

@@ -30,6 +30,10 @@ type LoginBonusStatus = {
   amount: bigint;
 };
 
+type RewardAnimationState = "idle" | "revealing" | "claimed";
+
+const REWARD_REVEAL_DURATION_MS = 2600;
+
 function shortAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
@@ -66,14 +70,14 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
   const [txHash, setTxHash] = useState<Hash | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [rewardRevealed, setRewardRevealed] = useState(false);
+  const [rewardAnimationState, setRewardAnimationState] = useState<RewardAnimationState>("idle");
 
   const loadStatus = useCallback(async (options?: { preserveMessage?: boolean; preserveRewardAnimation?: boolean }) => {
     if (!options?.preserveMessage) {
       setMessage(null);
     }
     if (!options?.preserveRewardAnimation) {
-      setRewardRevealed(false);
+      setRewardAnimationState("idle");
     }
     setError(null);
 
@@ -131,15 +135,33 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
     void loadStatus();
   }, [loadStatus]);
 
+  useEffect(() => {
+    if (rewardAnimationState !== "revealing") {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setRewardAnimationState("claimed");
+    }, REWARD_REVEAL_DURATION_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [rewardAnimationState]);
+
   const hasClaimedToday = status ? status.lastClaimDay === status.currentDay : false;
-  const rewardState = rewardRevealed ? "revealing" : hasClaimedToday ? "claimed" : "closed";
+  const rewardState =
+    rewardAnimationState === "revealing"
+      ? "revealing"
+      : rewardAnimationState === "claimed" || hasClaimedToday
+        ? "claimed"
+        : "closed";
+  const rewardAmountLabel = status ? `+${formatBmtAmount(status.amount)}` : "+1 BMT";
 
   async function claim() {
     setClaiming(true);
     setMessage(null);
     setError(null);
     setTxHash(null);
-    setRewardRevealed(false);
+    setRewardAnimationState("idle");
 
     try {
       if (!isBmtConfigured()) {
@@ -169,7 +191,7 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
         throw new Error("トランザクションが失敗しました。");
       }
 
-      setRewardRevealed(true);
+      setRewardAnimationState("revealing");
       setMessage("ログインボーナスを受け取りました。");
       await loadStatus({ preserveMessage: true, preserveRewardAnimation: true });
     } catch (caught) {
@@ -210,6 +232,7 @@ function LoginBonusPanelInner({ walletAddress }: Props) {
           height={520}
           sizes="260px"
         />
+        <strong className="login-bonus-earned-label">{rewardAmountLabel}</strong>
       </div>
 
       <div className="bmt-stat-grid login-bonus-grid">
